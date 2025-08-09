@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hardware RE Lab Simulator v5</title>
+    <title>BLACKLAYER LABS - RE Simulator</title>
     
     <!-- Tailwind CSS via Play CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -19,7 +19,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet">
 
     <script>
-        // Custom Tailwind CSS Configuration
+        // Custom Tailwind CSS Configuration for BLACKLAYER LABS
         tailwind.config = {
             theme: {
                 extend: {
@@ -27,28 +27,30 @@
                         mono: ['Fira Code', 'monospace'],
                     },
                     colors: {
-                        'hacker-dark': '#0d1117',
-                        'hacker-bg': '#010409',
-                        'hacker-green': '#39d353',
-                        'hacker-cyan': '#22d3ee',
-                        'hacker-gray': '#8b949e',
-                        'hacker-border': '#30363d',
-                        'hacker-orange': '#f59e0b',
+                        'bl-black': '#000000',
+                        'bl-dark': '#111111',
+                        'bl-mid': '#222222',
+                        'bl-border': '#333333',
+                        'bl-gray': '#999999',
+                        'bl-light-gray': '#CCCCCC',
+                        'bl-white': '#FFFFFF',
+                        'bl-power': '#ef4444', // Red for power
+                        'bl-relay': '#39d353', // Green for relay
                     },
                     boxShadow: {
-                        'glow-cyan': '0 0 15px rgba(34, 211, 238, 0.6)',
-                        'glow-green': '0 0 15px rgba(57, 211, 83, 0.6)',
+                        'glow-white': '0 0 15px rgba(255, 255, 255, 0.4)',
                         'glow-red': '0 0 15px rgba(239, 68, 68, 0.6)',
+                        'glow-green': '0 0 15px rgba(57, 211, 83, 0.6)',
                     },
                     keyframes: {
                         fadeIn: { '0%': { opacity: 0 }, '100%': { opacity: 1 } },
+                        fadeOut: { '0%': { opacity: 1 }, '100%': { opacity: 0 } },
                         blink: { '50%': { opacity: 0 } },
-                        slideIn: { '0%': { transform: 'translateY(20px)', opacity: 0 }, '100%': { transform: 'translateY(0)', opacity: 1 } },
                     },
                     animation: {
-                        fadeIn: 'fadeIn 0.5s ease-in-out',
+                        fadeIn: 'fadeIn 1s ease-in-out',
+                        fadeOut: 'fadeOut 1s ease-in-out',
                         blink: 'blink 1s step-end infinite',
-                        slideIn: 'slideIn 0.5s ease-out forwards',
                     }
                 }
             }
@@ -58,26 +60,26 @@
     <style>
         /* General Body Styling & Background Effect */
         body, html {
-            background-color: #010409;
+            background-color: #000000;
             cursor: none; /* Hide default cursor */
         }
         body {
             background-image: 
-                linear-gradient(rgba(34, 211, 238, 0.07) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(34, 211, 238, 0.07) 1px, transparent 1px);
-            background-size: 25px 25px;
-            color: #c9d1d9;
+                linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 30px 30px;
+            color: #CCCCCC;
             font-family: 'Fira Code', monospace;
         }
-        /* Custom scrollbar for terminal-like feel */
+        /* Custom scrollbar */
         ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #0d1117; }
-        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #22d3ee; }
+        ::-webkit-scrollbar-track { background: #111111; }
+        ::-webkit-scrollbar-thumb { background: #333333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #FFFFFF; }
         .tab-active {
-            background-color: #0d1117;
-            color: #22d3ee;
-            border-bottom-color: #22d3ee;
+            background-color: #111111;
+            color: #FFFFFF;
+            border-bottom-color: #FFFFFF;
         }
         
         /* Cursor Styling */
@@ -114,9 +116,9 @@
 
         const TOOLS_CONFIG = {
             VCC: { label: 'VCC', color: '#ef4444', icon: 'M13 10V3L4 14h7v7l9-11h-7z' },
-            GND: { label: 'GND', color: '#8b949e', icon: 'M13 13h-2v-2h2v2zm-4 0H7v-2h2v2zm-4 0H3v-2h2v2zm12-4h-2V7h2v2zm-4 0H9V7h2v2zm-4 0H5V7h2v2zm12-4h-2V3h2v2zm-4 0H9V3h2v2z' },
-            TX: { label: 'TX', color: '#f59e0b', icon: 'M4 12h16m-7-7l7 7-7 7' },
-            RX: { label: 'RX', color: '#84cc16', icon: 'M20 12H4m7 7l-7-7 7-7' },
+            GND: { label: 'GND', color: '#999999', icon: 'M13 13h-2v-2h2v2zm-4 0H7v-2h2v2zm-4 0H3v-2h2v2zm12-4h-2V7h2v2zm-4 0H9V7h2v2zm-4 0H5V7h2v2zm12-4h-2V3h2v2zm-4 0H9V3h2v2z' },
+            TX: { label: 'TX', color: '#FFFFFF', icon: 'M4 12h16m-7-7l7 7-7 7' },
+            RX: { label: 'RX', color: '#CCCCCC', icon: 'M20 12H4m7 7l-7-7 7-7' },
         };
 
         const CORRECT_CONNECTIONS = {
@@ -132,8 +134,8 @@
             { id: 'EXPLOITATION', text: 'Exploit the vulnerability to enable the relay.' },
         ];
 
-        const BOOT_LOG_SEQUENCE = ['Booting SimpleOS v2.1.0...', 'Kernel initializing...', 'Memory check: 512KB RAM... OK.', 'Initializing Flash Storage (W25Q32)...', 'Mounting root filesystem...', 'Starting system services...', 'Network interface eth0: DOWN.', 'Starting login shell on ttyS0 (UART0)...', 'Secure IoT Device Ready.', 'login: '];
-        const DECOMPILED_CODE = `// Firmware Analysis for Secure IoT Plug v2.1.0
+        const BOOT_LOG_SEQUENCE = ['Booting SecureOS v3.0...', 'Kernel initializing...', 'Memory check: 512KB RAM... OK.', 'Initializing Flash Storage (W25Q32)...', 'Mounting root filesystem...', 'Starting system services...', 'Network interface eth0: DOWN.', 'Starting login shell on ttyS0 (UART0)...', 'Secure IoT Device Ready.', 'login: '];
+        const DECOMPILED_CODE = `// Firmware Analysis for Secure IoT Plug v3.0
 // Decompilation complete.
 
 void initialize_system() {
@@ -189,8 +191,8 @@ int main() {
 
             return (
                 <div className="custom-cursor fixed inset-0 pointer-events-none z-[9999]">
-                    <div ref={vLineRef} className="absolute top-0 w-px h-full bg-hacker-cyan/50 transform -translate-x-1/2"></div>
-                    <div ref={hLineRef} className="absolute left-0 h-px w-full bg-hacker-cyan/50 transform -translate-y-1/2"></div>
+                    <div ref={vLineRef} className="absolute top-0 w-px h-full bg-bl-white/30 transform -translate-x-1/2"></div>
+                    <div ref={hLineRef} className="absolute left-0 h-px w-full bg-bl-white/30 transform -translate-y-1/2"></div>
                 </div>
             );
         };
@@ -213,12 +215,12 @@ int main() {
                 return () => document.removeEventListener('mousemove', handleMouseMove);
             }, []);
 
-            return null; // This component does not render anything
+            return null;
         };
 
         const Panel = ({ title, children, className }) => (
-            <div className={`bg-hacker-dark/80 backdrop-blur-sm border border-hacker-border rounded-lg flex flex-col ${className}`}>
-                <h2 className="text-lg font-bold text-hacker-cyan p-3 border-b border-hacker-border flex-shrink-0">{title}</h2>
+            <div className={`bg-bl-dark/80 backdrop-blur-sm border border-bl-border rounded-lg flex flex-col ${className}`}>
+                <h2 className="text-lg font-bold text-bl-white p-3 border-b border-bl-border flex-shrink-0">{title}</h2>
                 <div className="p-4 flex-grow overflow-auto">
                     {children}
                 </div>
@@ -239,18 +241,18 @@ int main() {
             };
             
             return (
-                <div className="bg-hacker-dark h-full p-3 font-mono text-sm flex flex-col">
+                <div className="bg-bl-dark h-full p-3 font-mono text-sm flex flex-col">
                     <div className="flex-grow overflow-y-auto">
                         {lines.map((line, index) => <div key={index} className="whitespace-pre-wrap leading-relaxed" dangerouslySetInnerHTML={{ __html: line }} />)}
                         <div ref={endOfMessagesRef} />
                     </div>
                     {showInput && (
                          <div className="flex items-center mt-2 flex-shrink-0">
-                            <span className="text-hacker-cyan mr-2">{prompt}</span>
+                            <span className="text-bl-white mr-2">{prompt}</span>
                             <input
                                 type={prompt.includes('Password') ? 'password' : 'text'}
                                 value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown}
-                                className="bg-transparent border-none text-hacker-green w-full focus:outline-none cursor-text" autoFocus
+                                className="bg-transparent border-none text-bl-light-gray w-full focus:outline-none cursor-text" autoFocus
                             />
                          </div>
                     )}
@@ -258,6 +260,13 @@ int main() {
             );
         };
         
+        const FullScreenAnimation = ({ title, children }) => (
+            <div className="fixed inset-0 bg-bl-black/95 backdrop-blur-sm flex flex-col justify-center items-center z-[1000] animate-fadeIn p-8">
+                <h2 className="text-3xl text-bl-white font-bold mb-4">{title}</h2>
+                {children}
+            </div>
+        );
+
         const HexDumpAnimation = ({ onComplete }) => {
             const [lines, setLines] = useState([]);
             const [progress, setProgress] = useState(0);
@@ -269,7 +278,7 @@ int main() {
                 const bytes = Array.from({ length: 16 }, () => Math.floor(Math.random() * 256));
                 const hex = bytes.map(b => b.toString(16).padStart(2, '0').toUpperCase()).join(' ');
                 const ascii = bytes.map(byteToAscii).join('');
-                return `<span class="text-hacker-gray">0x${address.toString(16).toUpperCase()}:</span> <span class="text-hacker-green">${hex}</span>  |${ascii}|`;
+                return `<span class="text-bl-gray">0x${address.toString(16).toUpperCase()}:</span> <span class="text-bl-light-gray">${hex}</span>  |${ascii}|`;
             };
 
             useEffect(() => {
@@ -289,18 +298,17 @@ int main() {
             }, [onComplete]);
 
             return (
-                <div className="fixed inset-0 bg-black/95 backdrop-blur-sm flex flex-col justify-center items-center z-[1000] animate-fadeIn p-8">
-                    <h2 className="text-3xl text-hacker-cyan font-bold mb-4">DUMPING FLASH MEMORY (W25Q32)</h2>
-                    <div className="w-full max-w-4xl h-3/4 bg-hacker-dark border border-hacker-border rounded-lg p-4 font-mono text-sm overflow-hidden">
+                <FullScreenAnimation title="DUMPING FLASH MEMORY (W25Q32)">
+                    <div className="w-full max-w-4xl h-3/4 bg-bl-dark border border-bl-border rounded-lg p-4 font-mono text-sm overflow-hidden">
                         {lines.map((line, i) => <p key={i} dangerouslySetInnerHTML={{ __html: line }} />)}
                     </div>
                     <div className="w-full max-w-4xl mt-4">
-                        <p className="text-hacker-green mb-2">Progress: {Math.round(progress)}%</p>
-                        <div className="w-full bg-hacker-border rounded-full h-4">
-                            <div className="bg-hacker-green h-4 rounded-full" style={{ width: `${progress}%` }}></div>
+                        <p className="text-bl-light-gray mb-2">Progress: {Math.round(progress)}%</p>
+                        <div className="w-full bg-bl-border rounded-full h-4">
+                            <div className="bg-bl-white h-4 rounded-full" style={{ width: `${progress}%` }}></div>
                         </div>
                     </div>
-                </div>
+                </FullScreenAnimation>
             );
         };
 
@@ -334,32 +342,73 @@ int main() {
             }, [stages, onComplete]);
 
             return (
-                <div className="fixed inset-0 bg-black/95 backdrop-blur-sm flex flex-col justify-center items-center z-[1000] animate-fadeIn p-8">
-                    <h2 className="text-3xl text-hacker-cyan font-bold mb-4">DECOMPILING FIRMWARE</h2>
-                    <div className="w-full max-w-4xl h-3/4 bg-hacker-dark border border-hacker-border rounded-lg p-4 font-mono text-sm overflow-y-auto">
-                        <pre className="text-hacker-green whitespace-pre-wrap">{code}</pre>
+                <FullScreenAnimation title="DECOMPILING FIRMWARE">
+                    <div className="w-full max-w-4xl h-3/4 bg-bl-dark border border-bl-border rounded-lg p-4 font-mono text-sm overflow-y-auto">
+                        <pre className="text-bl-light-gray whitespace-pre-wrap">{code}</pre>
                     </div>
                     <div className="w-full max-w-4xl mt-4">
-                        <p className="text-hacker-green">STATUS: {status}<span className="animate-blink">_</span></p>
+                        <p className="text-bl-light-gray">STATUS: {status}<span className="animate-blink">_</span></p>
+                    </div>
+                </FullScreenAnimation>
+            );
+        };
+
+        const WinScreen = ({ onReset }) => (
+            <FullScreenAnimation title="">
+                <div className="text-center">
+                    <h2 className="text-5xl font-bold text-bl-white mb-4" style={{textShadow: '0 0 15px #FFFFFF'}}>VULNERABILITY EXPLOITED</h2>
+                    <p className="text-lg text-bl-gray mb-2">Device relay has been successfully enabled.</p>
+                    <p className="text-lg text-bl-gray mb-8">Mission accomplished.</p>
+                    <button onClick={onReset} className="px-8 py-3 border-2 border-bl-white text-bl-white rounded-lg text-xl hover:bg-bl-white hover:text-bl-black transition-all duration-300 shadow-lg hover:shadow-glow-white cursor-pointer">
+                        Restart Simulation
+                    </button>
+                </div>
+            </FullScreenAnimation>
+        );
+
+        const SplashScreen = ({ onComplete }) => {
+            const [lines, setLines] = useState([]);
+            const bootSequence = useMemo(() => [
+                { text: 'SYSTEM BOOT ...', duration: 500 },
+                { text: 'INITIATING KERNEL ... [OK]', duration: 700 },
+                { text: 'LOADING VIRTUAL ENV ... [OK]', duration: 800 },
+                { text: 'BL4CKL4YER TECHNOLOGIES', duration: 100, isTitle: true },
+                { text: 'PRESENTS', duration: 1500, isSubtitle: true },
+            ], []);
+            
+            useEffect(() => {
+                let currentLine = 0;
+                const runSequence = () => {
+                    if (currentLine < bootSequence.length) {
+                        const line = bootSequence[currentLine];
+                        setLines(prev => [...prev, line]);
+                        setTimeout(() => {
+                            currentLine++;
+                            runSequence();
+                        }, line.duration);
+                    } else {
+                        setTimeout(onComplete, 1000);
+                    }
+                };
+                runSequence();
+            }, [bootSequence, onComplete]);
+
+            return (
+                <div className="fixed inset-0 bg-bl-black flex flex-col justify-center items-center animate-fadeIn font-mono text-bl-light-gray">
+                    <div className="w-full max-w-xl text-left p-8">
+                        {lines.map((line, i) => (
+                            <div key={i} className={`animate-fadeIn ${line.isTitle ? 'text-4xl text-bl-white font-bold text-center mt-8' : ''} ${line.isSubtitle ? 'text-center text-bl-gray' : ''}`}>
+                                {line.text}
+                            </div>
+                        ))}
                     </div>
                 </div>
             );
         };
 
-        const WinScreen = ({ onReset }) => (
-            <div className="fixed inset-0 bg-hacker-dark/95 backdrop-blur-md z-[1000] flex flex-col justify-center items-center animate-fadeIn text-center p-4">
-                <h2 className="text-5xl font-bold text-hacker-green mb-4" style={{textShadow: '0 0 15px #39d353'}}>VULNERABILITY EXPLOITED</h2>
-                <p className="text-lg text-hacker-gray mb-2">Device relay has been successfully enabled.</p>
-                <p className="text-lg text-hacker-gray mb-8">Mission accomplished.</p>
-                <button onClick={onReset} className="px-8 py-3 border-2 border-hacker-green text-hacker-green rounded-lg text-xl hover:bg-hacker-green hover:text-hacker-dark transition-all duration-300 shadow-lg hover:shadow-glow-green cursor-pointer">
-                    Restart Simulation
-                </button>
-            </div>
-        );
-
         const LoginPage = ({ onLogin }) => {
             const [lines, setLines] = useState(['RE-LAB Secure Terminal v5.0', 'Please authenticate to continue...', '']);
-            const [loginStep, setLoginStep] = useState('username'); // username -> password -> success
+            const [loginStep, setLoginStep] = useState('username');
             const [prompt, setPrompt] = useState('Username: ');
             const [username, setUsername] = useState('');
 
@@ -384,8 +433,8 @@ int main() {
             };
 
             return (
-                <div className="min-h-screen bg-hacker-bg flex justify-center items-center animate-fadeIn">
-                    <div className="w-full max-w-3xl h-[50vh] bg-hacker-dark border-2 border-hacker-border rounded-lg shadow-glow-cyan">
+                <div className="min-h-screen bg-bl-black flex justify-center items-center animate-fadeIn">
+                    <div className="w-full max-w-3xl h-[50vh] bg-bl-dark border-2 border-bl-border rounded-lg shadow-glow-white">
                         <Terminal lines={lines} onCommand={handleLoginCommand} showInput={loginStep !== 'success'} prompt={prompt} />
                     </div>
                 </div>
@@ -397,7 +446,7 @@ int main() {
             const [gameState, setGameState] = useState('INSPECTION');
             const [selectedTool, setSelectedTool] = useState(null);
             const [connections, setConnections] = useState([]);
-            const [terminalLines, setTerminalLines] = useState([ 'Welcome to the Hardware RE Lab.' ]);
+            const [terminalLines, setTerminalLines] = useState([ 'Welcome to the BLACKLAYER LABS RE Environment.' ]);
             const [showTerminalInput, setShowTerminalInput] = useState(false);
             const [showAnimation, setShowAnimation] = useState(null);
             const [outputTab, setOutputTab] = useState('terminal');
@@ -415,7 +464,7 @@ int main() {
             }, [connections]);
 
             const addTerminalLine = (text, type = 'INFO') => {
-                const colors = { SUCCESS: 'text-hacker-green', ERROR: 'text-red-500', INFO: 'text-hacker-cyan', WARN: 'text-hacker-orange' };
+                const colors = { SUCCESS: 'text-bl-relay', ERROR: 'text-bl-power', INFO: 'text-bl-white', WARN: 'text-yellow-400' };
                 const prefix = type === 'SUCCESS' ? '[+] ' : type === 'ERROR' ? '[-] ' : type === 'WARN' ? '[!] ' : '[*] ';
                 setTerminalLines(prev => [...prev, `<span class="${colors[type]}">${prefix}</span>${text}`]);
             };
@@ -436,11 +485,11 @@ int main() {
                     let logIndex = 0;
                     const interval = setInterval(() => {
                         if (logIndex < BOOT_LOG_SEQUENCE.length) {
-                            setTerminalLines(prev => [...prev, `<span class="text-hacker-gray">${BOOT_LOG_SEQUENCE[logIndex]}</span>`]);
+                            setTerminalLines(prev => [...prev, `<span class="text-bl-gray">${BOOT_LOG_SEQUENCE[logIndex]}</span>`]);
                             logIndex++;
                         } else {
                             clearInterval(interval);
-                            addTerminalLine("\\nType <span class='text-hacker-orange'>dump_firmware</span> to extract the firmware.", 'INFO');
+                            addTerminalLine("\\nType <span class='text-yellow-400'>dump_firmware</span> to extract the firmware.", 'INFO');
                             setShowTerminalInput(true);
                         }
                     }, 400);
@@ -481,16 +530,13 @@ int main() {
                 }
             };
             
-            const handleDumpComplete = () => {
-                setShowAnimation('decompile');
-            };
-
+            const handleDumpComplete = () => setShowAnimation('decompile');
             const handleDecompilationComplete = () => {
                  setShowAnimation(null);
                  setGameState('ANALYSIS');
                  setOutputTab('analysis');
                  addTerminalLine('Decompilation complete. Analyze the code for vulnerabilities.', 'SUCCESS');
-                 addTerminalLine("HINT: Use <span class='text-hacker-orange'>call &lt;function_name&gt;</span> to execute functions.", "INFO");
+                 addTerminalLine("HINT: Use <span class='text-yellow-400'>call &lt;function_name&gt;</span> to execute functions.", "INFO");
                  setShowTerminalInput(true);
             };
 
@@ -524,19 +570,17 @@ int main() {
 
             return (
                 <>
-                    {/* Animations and Overlays */}
                     {showAnimation === 'dump' && <HexDumpAnimation onComplete={handleDumpComplete} />}
                     {showAnimation === 'decompile' && <DecompilationAnimation onComplete={handleDecompilationComplete} />}
                     {gameState === 'EXPLOITATION' && <WinScreen onReset={onResetRequest} />}
 
-                    <div className="min-h-screen bg-hacker-bg p-4 md:p-6 flex flex-col font-mono animate-fadeIn">
+                    <div className="min-h-screen bg-bl-black p-4 md:p-6 flex flex-col font-mono animate-fadeIn">
                         <header className="flex justify-between items-center mb-4 flex-shrink-0">
-                            <h1 className="text-2xl md:text-3xl font-bold text-hacker-cyan">Hardware RE Lab</h1>
-                            <button onClick={onResetRequest} className="px-4 py-2 border border-hacker-orange text-hacker-orange rounded-lg hover:bg-hacker-orange hover:text-hacker-dark transition-all text-sm cursor-pointer">Reset Challenge</button>
+                            <h1 className="text-2xl md:text-3xl font-bold text-bl-white">BLACKLAYER LABS // RE DIVISION</h1>
+                            <button onClick={onResetRequest} className="px-4 py-2 border border-bl-border text-bl-light-gray rounded-lg hover:bg-bl-white hover:text-bl-black transition-all text-sm cursor-pointer">Reset Challenge</button>
                         </header>
                         
                         <main className="flex-grow grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-0">
-                            {/* Left Panel: Objectives & Toolkit */}
                             <div className="lg:col-span-3 flex flex-col gap-4 min-h-0">
                                 <Panel title="Mission Objectives">
                                     <ul className="space-y-3">
@@ -544,12 +588,12 @@ int main() {
                                             const isComplete = objectivesStatus[id];
                                             const isCurrent = gameState === id;
                                             return (
-                                                <li key={id} className={`flex items-start transition-all duration-300 ${isComplete ? 'text-hacker-gray' : 'text-white'}`}>
-                                                    <svg className={`w-5 h-5 mr-3 mt-0.5 flex-shrink-0 ${isComplete ? 'text-hacker-green' : 'text-hacker-border'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <li key={id} className={`flex items-start transition-all duration-300 ${isComplete ? 'text-bl-gray' : 'text-bl-light-gray'}`}>
+                                                    <svg className={`w-5 h-5 mr-3 mt-0.5 flex-shrink-0 ${isComplete ? 'text-bl-relay' : 'text-bl-border'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         {isComplete ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /> : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />}
                                                     </svg>
                                                     <span className={`${isComplete && 'line-through'}`}>{text}</span>
-                                                    {isCurrent && <span className="ml-2 w-2 h-2 rounded-full bg-hacker-cyan animate-pulse"></span>}
+                                                    {isCurrent && <span className="ml-2 w-2 h-2 rounded-full bg-bl-white animate-pulse"></span>}
                                                 </li>
                                             );
                                         })}
@@ -563,11 +607,11 @@ int main() {
                                             return (
                                                 <button key={id} id={`tool-${id}`} onClick={() => handleToolSelect(id)} disabled={isConnected}
                                                     className={`p-3 border rounded-md text-center transition-all flex flex-col items-center justify-center cursor-pointer
-                                                        ${isConnected ? 'bg-hacker-gray/10 text-hacker-gray' : 'hover:shadow-glow-cyan hover:border-hacker-cyan'}
-                                                        ${isSelected ? 'shadow-glow-cyan border-hacker-cyan' : 'border-hacker-border'}`}
+                                                        ${isConnected ? 'bg-bl-mid/50 text-bl-gray' : 'hover:shadow-glow-white hover:border-bl-white'}
+                                                        ${isSelected ? 'shadow-glow-white border-bl-white' : 'border-bl-border'}`}
                                                 >
-                                                    <svg className="w-6 h-6 mb-1" style={{color: isConnected ? '' : color}} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={icon} /></svg>
-                                                    <span className="font-bold text-sm" style={{color: isConnected ? '' : color}}>{label}</span>
+                                                    <svg className="w-6 h-6 mb-1" style={{color: color}} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={icon} /></svg>
+                                                    <span className="font-bold text-sm" style={{color: color}}>{label}</span>
                                                 </button>
                                             );
                                         })}
@@ -575,25 +619,24 @@ int main() {
                                 </Panel>
                             </div>
 
-                            {/* Center Panel: Workspace */}
-                            <div ref={workspaceRef} className="lg:col-span-5 bg-hacker-dark/80 backdrop-blur-sm p-4 border border-hacker-border rounded-lg relative flex justify-center items-center min-h-[350px] lg:min-h-0">
-                                <div className="relative w-full max-w-md h-72 bg-[#161b22] border-2 border-hacker-border p-4 rounded-lg shadow-lg">
-                                    <p className="absolute top-2 right-4 text-hacker-gray text-xs">Secure IoT Plug v2.1</p>
-                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-28 bg-black border-2 border-hacker-border flex flex-col justify-center items-center p-2">
-                                        <span className="text-white font-bold text-sm">STM32F103RGT6</span>
-                                        <span className="text-hacker-gray text-xs">ARM Cortex-M3</span>
+                            <div ref={workspaceRef} className="lg:col-span-5 bg-bl-dark/80 backdrop-blur-sm p-4 border border-bl-border rounded-lg relative flex justify-center items-center min-h-[350px] lg:min-h-0">
+                                <div className="relative w-full max-w-md h-72 bg-bl-mid border-2 border-bl-border p-4 rounded-lg shadow-lg">
+                                    <p className="absolute top-2 right-4 text-bl-gray text-xs">Secure IoT Plug v3.0</p>
+                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-28 bg-bl-black border-2 border-bl-border flex flex-col justify-center items-center p-2">
+                                        <span className="text-bl-white font-bold text-sm">STM32F103RGT6</span>
+                                        <span className="text-bl-gray text-xs">ARM Cortex-M3</span>
                                     </div>
-                                    <div className="absolute top-10 left-10 w-8 h-4 bg-gray-700"></div>
-                                    <div className="absolute top-16 left-10 w-8 h-4 bg-gray-700"></div>
-                                    <div className="absolute bottom-10 right-10 w-4 h-8 bg-gray-700"></div>
-                                    <div className={`absolute bottom-4 left-4 w-4 h-4 rounded-full border-2 transition-all ${isPoweredOn ? 'border-red-500 bg-red-500 shadow-glow-red animate-pulse' : 'border-red-800 bg-red-900'}`}></div>
-                                    <span className={`absolute bottom-4 left-10 text-xs transition-colors ${isPoweredOn ? 'text-red-400' : 'text-hacker-gray'}`}>PWR</span>
-                                    <div className={`absolute bottom-4 right-4 w-4 h-4 rounded-full border-2 transition-all ${gameState === 'EXPLOITATION' ? 'border-hacker-green bg-hacker-green shadow-glow-green animate-pulse' : 'border-green-800 bg-green-900'}`}></div>
-                                    <span className={`absolute bottom-4 right-10 text-xs transition-colors ${gameState === 'EXPLOITATION' ? 'text-hacker-green' : 'text-hacker-gray'}`}>RELAY</span>
+                                    <div className="absolute top-10 left-10 w-8 h-4 bg-bl-dark"></div>
+                                    <div className="absolute top-16 left-10 w-8 h-4 bg-bl-dark"></div>
+                                    <div className="absolute bottom-10 right-10 w-4 h-8 bg-bl-dark"></div>
+                                    <div className={`absolute bottom-4 left-4 w-4 h-4 rounded-full border-2 transition-all ${isPoweredOn ? 'border-bl-power bg-bl-power shadow-glow-red animate-pulse' : 'border-red-900 bg-red-900/50'}`}></div>
+                                    <span className={`absolute bottom-4 left-10 text-xs transition-colors ${isPoweredOn ? 'text-bl-power' : 'text-bl-gray'}`}>PWR</span>
+                                    <div className={`absolute bottom-4 right-4 w-4 h-4 rounded-full border-2 transition-all ${gameState === 'EXPLOITATION' ? 'border-bl-relay bg-bl-relay shadow-glow-green animate-pulse' : 'border-green-900 bg-green-900/50'}`}></div>
+                                    <span className={`absolute bottom-4 right-10 text-xs transition-colors ${gameState === 'EXPLOITATION' ? 'text-bl-relay' : 'text-bl-gray'}`}>RELAY</span>
 
                                     {Object.entries(PINS_CONFIG).map(([id, { label, x, y }]) => (
                                         <div key={id} id={`pin-${id}`} onClick={() => handlePinClick(id)}
-                                            className="absolute w-6 h-3 bg-gray-600 transform cursor-pointer hover:bg-hacker-cyan"
+                                            className="absolute w-6 h-3 bg-bl-gray/50 transform cursor-pointer hover:bg-bl-white"
                                             style={{ top: `${y}%`, left: `${x}%`, transform: `translate(-${x > 50 ? 0 : 100}%, -50%)` }}
                                             title={label}
                                         ></div>
@@ -603,9 +646,11 @@ int main() {
                                     {connections.map(({tool, pin}, index) => {
                                         const toolPos = getToolPosition(tool);
                                         const pinPos = getPinPosition(pin);
+                                        const midX = toolPos.x + (pinPos.x - toolPos.x) / 2;
+                                        const pathData = `M ${toolPos.x} ${toolPos.y} L ${midX} ${toolPos.y} L ${midX} ${pinPos.y} L ${pinPos.x} ${pinPos.y}`;
                                         return (
-                                            <path key={index} d={`M ${toolPos.x} ${toolPos.y} C ${toolPos.x} ${pinPos.y}, ${pinPos.x} ${toolPos.y}, ${pinPos.x} ${pinPos.y}`}
-                                                stroke={TOOLS_CONFIG[tool].color} strokeWidth="3" fill="transparent"
+                                            <path key={index} d={pathData}
+                                                stroke={TOOLS_CONFIG[tool].color} strokeWidth="2" fill="transparent"
                                                 className="animate-fadeIn"
                                             />
                                         )
@@ -613,17 +658,16 @@ int main() {
                                 </svg>
                             </div>
                             
-                            {/* Right Panel: Console/Analysis */}
-                            <div className="lg:col-span-4 bg-hacker-dark/80 backdrop-blur-sm border border-hacker-border rounded-lg min-h-[400px] lg:min-h-0 flex flex-col">
+                            <div className="lg:col-span-4 bg-bl-dark/80 backdrop-blur-sm border border-bl-border rounded-lg min-h-[400px] lg:min-h-0 flex flex-col">
                                 {gameState === 'ANALYSIS' || gameState === 'EXPLOITATION' ? (
                                     <>
-                                    <div className="flex border-b border-hacker-border flex-shrink-0">
-                                        <button onClick={() => setOutputTab('terminal')} className={`flex-1 p-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${outputTab === 'terminal' ? 'tab-active' : 'border-transparent text-hacker-gray hover:bg-hacker-dark'}`}>Terminal</button>
-                                        <button onClick={() => setOutputTab('analysis')} className={`flex-1 p-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${outputTab === 'analysis' ? 'tab-active' : 'border-transparent text-hacker-gray hover:bg-hacker-dark'}`}>Firmware Analysis</button>
+                                    <div className="flex border-b border-bl-border flex-shrink-0">
+                                        <button onClick={() => setOutputTab('terminal')} className={`flex-1 p-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${outputTab === 'terminal' ? 'tab-active' : 'border-transparent text-bl-gray hover:bg-bl-dark'}`}>Terminal</button>
+                                        <button onClick={() => setOutputTab('analysis')} className={`flex-1 p-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${outputTab === 'analysis' ? 'tab-active' : 'border-transparent text-bl-gray hover:bg-bl-dark'}`}>Firmware Analysis</button>
                                     </div>
                                     <div className="flex-grow min-h-0">
                                         {outputTab === 'terminal' && <Terminal lines={terminalLines} onCommand={handleTerminalCommand} showInput={showTerminalInput} prompt="> " />}
-                                        {outputTab === 'analysis' && <pre className="text-xs text-white whitespace-pre-wrap p-4 h-full overflow-y-auto">{DECOMPILED_CODE}</pre>}
+                                        {outputTab === 'analysis' && <pre className="text-xs text-bl-light-gray whitespace-pre-wrap p-4 h-full overflow-y-auto">{DECOMPILED_CODE}</pre>}
                                     </div>
                                     </>
                                 ) : (
@@ -639,15 +683,17 @@ int main() {
         }
 
         function App() {
-            const [appState, setAppState] = useState('login'); // login -> game
+            const [appState, setAppState] = useState('splash'); // splash -> login -> game
 
+            const handleSplashComplete = () => setAppState('login');
             const handleLogin = () => setAppState('game');
-            const handleReset = () => setAppState('login');
+            const handleReset = () => setAppState('splash');
 
             return (
                 <>
                     <CursorManager />
                     <CustomCursor />
+                    {appState === 'splash' && <SplashScreen onComplete={handleSplashComplete} />}
                     {appState === 'login' && <LoginPage onLogin={handleLogin} />}
                     {appState === 'game' && <Game onResetRequest={handleReset} />}
                 </>
