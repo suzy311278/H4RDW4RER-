@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hardware RE Lab Simulator v5</title>
+    
+    <!-- Tailwind CSS via Play CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & Babel for in-browser JSX transpilation -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Google Fonts: Fira Code -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <script>
+        // Custom Tailwind CSS Configuration
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        mono: ['Fira Code', 'monospace'],
+                    },
+                    colors: {
+                        'hacker-dark': '#0d1117',
+                        'hacker-bg': '#010409',
+                        'hacker-green': '#39d353',
+                        'hacker-cyan': '#22d3ee',
+                        'hacker-gray': '#8b949e',
+                        'hacker-border': '#30363d',
+                        'hacker-orange': '#f59e0b',
+                    },
+                    boxShadow: {
+                        'glow-cyan': '0 0 15px rgba(34, 211, 238, 0.6)',
+                        'glow-green': '0 0 15px rgba(57, 211, 83, 0.6)',
+                        'glow-red': '0 0 15px rgba(239, 68, 68, 0.6)',
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: 0 }, '100%': { opacity: 1 } },
+                        blink: { '50%': { opacity: 0 } },
+                        slideIn: { '0%': { transform: 'translateY(20px)', opacity: 0 }, '100%': { transform: 'translateY(0)', opacity: 1 } },
+                    },
+                    animation: {
+                        fadeIn: 'fadeIn 0.5s ease-in-out',
+                        blink: 'blink 1s step-end infinite',
+                        slideIn: 'slideIn 0.5s ease-out forwards',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* General Body Styling & Background Effect */
+        body, html {
+            background-color: #010409;
+            cursor: none; /* Hide default cursor */
+        }
+        body {
+            background-image: 
+                linear-gradient(rgba(34, 211, 238, 0.07) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(34, 211, 238, 0.07) 1px, transparent 1px);
+            background-size: 25px 25px;
+            color: #c9d1d9;
+            font-family: 'Fira Code', monospace;
+        }
+        /* Custom scrollbar for terminal-like feel */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0d1117; }
+        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #22d3ee; }
+        .tab-active {
+            background-color: #0d1117;
+            color: #22d3ee;
+            border-bottom-color: #22d3ee;
+        }
+        
+        /* Cursor Styling */
+        .custom-cursor {
+            opacity: 1;
+            transition: opacity 0.2s ease-in-out;
+        }
+        .cursor-hidden .custom-cursor {
+            opacity: 0;
+        }
+        .cursor-pointer-active { cursor: pointer; }
+        .cursor-text-active { cursor: text; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useMemo } = React;
+
+        // --- Configuration Data ---
+        const PINS_CONFIG = {
+            P_VCC: { label: 'VCC', x: 5, y: 15, type: 'POWER' },
+            P_GND: { label: 'GND', x: 5, y: 30, type: 'POWER' },
+            J_TCK: { label: 'TCK', x: 5, y: 55, type: 'JTAG' },
+            J_TDO: { label: 'TDO', x: 5, y: 70, type: 'JTAG' },
+            J_TMS: { label: 'TMS', x: 5, y: 85, type: 'JTAG' },
+            B_TX: { label: 'TXD0', x: 95, y: 15, type: 'UART' },
+            B_RX: { label: 'RXD0', x: 95, y: 30, type: 'UART' },
+            S_CS: { label: 'CS', x: 95, y: 55, type: 'SPI' },
+            S_MOSI: { label: 'MOSI', x: 95, y: 70, type: 'SPI' },
+            S_CLK: { label: 'CLK', x: 95, y: 85, type: 'SPI' },
+        };
+
+        const TOOLS_CONFIG = {
+            VCC: { label: 'VCC', color: '#ef4444', icon: 'M13 10V3L4 14h7v7l9-11h-7z' },
+            GND: { label: 'GND', color: '#8b949e', icon: 'M13 13h-2v-2h2v2zm-4 0H7v-2h2v2zm-4 0H3v-2h2v2zm12-4h-2V7h2v2zm-4 0H9V7h2v2zm-4 0H5V7h2v2zm12-4h-2V3h2v2zm-4 0H9V3h2v2z' },
+            TX: { label: 'TX', color: '#f59e0b', icon: 'M4 12h16m-7-7l7 7-7 7' },
+            RX: { label: 'RX', color: '#84cc16', icon: 'M20 12H4m7 7l-7-7 7-7' },
+        };
+
+        const CORRECT_CONNECTIONS = {
+            power: new Set(['VCC-P_VCC', 'GND-P_GND']),
+            uart: new Set(['TX-B_RX', 'RX-B_TX']),
+        };
+        
+        const OBJECTIVES = [
+            { id: 'INSPECTION', text: 'Power on the device.' },
+            { id: 'ACCESS', text: 'Connect to the UART interface.' },
+            { id: 'DUMPING', text: 'Dump the device firmware.' },
+            { id: 'ANALYSIS', text: 'Analyze firmware for vulnerabilities.' },
+            { id: 'EXPLOITATION', text: 'Exploit the vulnerability to enable the relay.' },
+        ];
+
+        const BOOT_LOG_SEQUENCE = ['Booting SimpleOS v2.1.0...', 'Kernel initializing...', 'Memory check: 512KB RAM... OK.', 'Initializing Flash Storage (W25Q32)...', 'Mounting root filesystem...', 'Starting system services...', 'Network interface eth0: DOWN.', 'Starting login shell on ttyS0 (UART0)...', 'Secure IoT Device Ready.', 'login: '];
+        const DECOMPILED_CODE = `// Firmware Analysis for Secure IoT Plug v2.1.0
+// Decompilation complete.
+
+void initialize_system() {
+    setup_gpio();
+    setup_uart(115200);
+    printf("System Initialized.\\n");
+}
+
+// Hidden function to grant administrative access
+void grant_access() {
+    printf("DEBUG: Admin access granted.\\n");
+    // This function enables the main power relay
+    set_relay_state(1); 
+}
+
+// Main execution loop
+int main() {
+    initialize_system();
+    
+    char username[16];
+    char password[16];
+
+    while(1) {
+        printf("login: ");
+        get_string(username, 16);
+        printf("password: ");
+        get_string(password, 16);
+
+        if (check_credentials(username, password)) {
+            printf("Welcome, user!\\n");
+            // Normal user access, no special privileges
+        } else {
+            printf("Access Denied.\\n");
+            // HINT: Is there a way to call functions directly?
+        }
+    }
+    return 0;
+}`;
+
+        // --- Helper Components ---
+        const CustomCursor = () => {
+            const vLineRef = useRef(null);
+            const hLineRef = useRef(null);
+
+            useEffect(() => {
+                const moveCursor = (e) => {
+                    if (vLineRef.current) vLineRef.current.style.left = `${e.clientX}px`;
+                    if (hLineRef.current) hLineRef.current.style.top = `${e.clientY}px`;
+                };
+                window.addEventListener('mousemove', moveCursor);
+                return () => window.removeEventListener('mousemove', moveCursor);
+            }, []);
+
+            return (
+                <div className="custom-cursor fixed inset-0 pointer-events-none z-[9999]">
+                    <div ref={vLineRef} className="absolute top-0 w-px h-full bg-hacker-cyan/50 transform -translate-x-1/2"></div>
+                    <div ref={hLineRef} className="absolute left-0 h-px w-full bg-hacker-cyan/50 transform -translate-y-1/2"></div>
+                </div>
+            );
+        };
+
+        const CursorManager = () => {
+            useEffect(() => {
+                const handleMouseMove = (e) => {
+                    const target = e.target;
+                    const body = document.body;
+
+                    const isPointer = target.closest('button, a, .cursor-pointer');
+                    const isText = target.closest('input, textarea, .cursor-text');
+
+                    body.classList.toggle('cursor-hidden', isPointer || isText);
+                    body.classList.toggle('cursor-pointer-active', isPointer);
+                    body.classList.toggle('cursor-text-active', isText);
+                };
+
+                document.addEventListener('mousemove', handleMouseMove);
+                return () => document.removeEventListener('mousemove', handleMouseMove);
+            }, []);
+
+            return null; // This component does not render anything
+        };
+
+        const Panel = ({ title, children, className }) => (
+            <div className={`bg-hacker-dark/80 backdrop-blur-sm border border-hacker-border rounded-lg flex flex-col ${className}`}>
+                <h2 className="text-lg font-bold text-hacker-cyan p-3 border-b border-hacker-border flex-shrink-0">{title}</h2>
+                <div className="p-4 flex-grow overflow-auto">
+                    {children}
+                </div>
+            </div>
+        );
+
+        const Terminal = ({ lines, onCommand, showInput, prompt }) => {
+            const [input, setInput] = useState('');
+            const endOfMessagesRef = useRef(null);
+
+            useEffect(() => { endOfMessagesRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [lines]);
+
+            const handleKeyDown = (e) => {
+                if (e.key === 'Enter' && onCommand) {
+                    onCommand(input);
+                    setInput('');
+                }
+            };
+            
+            return (
+                <div className="bg-hacker-dark h-full p-3 font-mono text-sm flex flex-col">
+                    <div className="flex-grow overflow-y-auto">
+                        {lines.map((line, index) => <div key={index} className="whitespace-pre-wrap leading-relaxed" dangerouslySetInnerHTML={{ __html: line }} />)}
+                        <div ref={endOfMessagesRef} />
+                    </div>
+                    {showInput && (
+                         <div className="flex items-center mt-2 flex-shrink-0">
+                            <span className="text-hacker-cyan mr-2">{prompt}</span>
+                            <input
+                                type={prompt.includes('Password') ? 'password' : 'text'}
+                                value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown}
+                                className="bg-transparent border-none text-hacker-green w-full focus:outline-none cursor-text" autoFocus
+                            />
+                         </div>
+                    )}
+                </div>
+            );
+        };
+        
+        const HexDumpAnimation = ({ onComplete }) => {
+            const [lines, setLines] = useState([]);
+            const [progress, setProgress] = useState(0);
+            const baseAddress = 0x08000000;
+
+            const byteToAscii = (byte) => (byte >= 32 && byte <= 126 ? String.fromCharCode(byte) : '.');
+
+            const generateLine = (address) => {
+                const bytes = Array.from({ length: 16 }, () => Math.floor(Math.random() * 256));
+                const hex = bytes.map(b => b.toString(16).padStart(2, '0').toUpperCase()).join(' ');
+                const ascii = bytes.map(byteToAscii).join('');
+                return `<span class="text-hacker-gray">0x${address.toString(16).toUpperCase()}:</span> <span class="text-hacker-green">${hex}</span>  |${ascii}|`;
+            };
+
+            useEffect(() => {
+                const totalSteps = 100;
+                let step = 0;
+                const interval = setInterval(() => {
+                    if (step < totalSteps) {
+                        setLines(prev => [...prev.slice(prev.length > 20 ? 1 : 0), generateLine(baseAddress + step * 16)]);
+                        setProgress((step / totalSteps) * 100);
+                        step++;
+                    } else {
+                        clearInterval(interval);
+                        setTimeout(onComplete, 1000);
+                    }
+                }, 50);
+                return () => clearInterval(interval);
+            }, [onComplete]);
+
+            return (
+                <div className="fixed inset-0 bg-black/95 backdrop-blur-sm flex flex-col justify-center items-center z-[1000] animate-fadeIn p-8">
+                    <h2 className="text-3xl text-hacker-cyan font-bold mb-4">DUMPING FLASH MEMORY (W25Q32)</h2>
+                    <div className="w-full max-w-4xl h-3/4 bg-hacker-dark border border-hacker-border rounded-lg p-4 font-mono text-sm overflow-hidden">
+                        {lines.map((line, i) => <p key={i} dangerouslySetInnerHTML={{ __html: line }} />)}
+                    </div>
+                    <div className="w-full max-w-4xl mt-4">
+                        <p className="text-hacker-green mb-2">Progress: {Math.round(progress)}%</p>
+                        <div className="w-full bg-hacker-border rounded-full h-4">
+                            <div className="bg-hacker-green h-4 rounded-full" style={{ width: `${progress}%` }}></div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const DecompilationAnimation = ({ onComplete }) => {
+            const [status, setStatus] = useState('INITIALIZING...');
+            const [code, setCode] = useState('');
+            const stages = useMemo(() => [
+                { text: 'PARSING ELF HEADER...', duration: 1000 },
+                { text: 'ANALYZING DATA SECTIONS...', duration: 1500 },
+                { text: 'IDENTIFYING 5 FUNCTIONS...', duration: 1000 },
+                { text: 'GENERATING PSEUDO-CODE...', duration: 2000, action: () => setCode(DECOMPILED_CODE) },
+                { text: 'DECOMPILATION COMPLETE', duration: 1000 },
+            ], []);
+
+            useEffect(() => {
+                let currentStage = 0;
+                const runStage = () => {
+                    if (currentStage < stages.length) {
+                        const stage = stages[currentStage];
+                        setStatus(stage.text);
+                        if (stage.action) stage.action();
+                        setTimeout(() => {
+                            currentStage++;
+                            runStage();
+                        }, stage.duration);
+                    } else {
+                        onComplete();
+                    }
+                };
+                runStage();
+            }, [stages, onComplete]);
+
+            return (
+                <div className="fixed inset-0 bg-black/95 backdrop-blur-sm flex flex-col justify-center items-center z-[1000] animate-fadeIn p-8">
+                    <h2 className="text-3xl text-hacker-cyan font-bold mb-4">DECOMPILING FIRMWARE</h2>
+                    <div className="w-full max-w-4xl h-3/4 bg-hacker-dark border border-hacker-border rounded-lg p-4 font-mono text-sm overflow-y-auto">
+                        <pre className="text-hacker-green whitespace-pre-wrap">{code}</pre>
+                    </div>
+                    <div className="w-full max-w-4xl mt-4">
+                        <p className="text-hacker-green">STATUS: {status}<span className="animate-blink">_</span></p>
+                    </div>
+                </div>
+            );
+        };
+
+        const WinScreen = ({ onReset }) => (
+            <div className="fixed inset-0 bg-hacker-dark/95 backdrop-blur-md z-[1000] flex flex-col justify-center items-center animate-fadeIn text-center p-4">
+                <h2 className="text-5xl font-bold text-hacker-green mb-4" style={{textShadow: '0 0 15px #39d353'}}>VULNERABILITY EXPLOITED</h2>
+                <p className="text-lg text-hacker-gray mb-2">Device relay has been successfully enabled.</p>
+                <p className="text-lg text-hacker-gray mb-8">Mission accomplished.</p>
+                <button onClick={onReset} className="px-8 py-3 border-2 border-hacker-green text-hacker-green rounded-lg text-xl hover:bg-hacker-green hover:text-hacker-dark transition-all duration-300 shadow-lg hover:shadow-glow-green cursor-pointer">
+                    Restart Simulation
+                </button>
+            </div>
+        );
+
+        const LoginPage = ({ onLogin }) => {
+            const [lines, setLines] = useState(['RE-LAB Secure Terminal v5.0', 'Please authenticate to continue...', '']);
+            const [loginStep, setLoginStep] = useState('username'); // username -> password -> success
+            const [prompt, setPrompt] = useState('Username: ');
+            const [username, setUsername] = useState('');
+
+            const handleLoginCommand = (input) => {
+                const trimmedInput = input.trim();
+                if (loginStep === 'username') {
+                    setUsername(trimmedInput);
+                    setLines(prev => [...prev, `Username: ${trimmedInput}`]);
+                    setLoginStep('password');
+                    setPrompt('Password: ');
+                } else if (loginStep === 'password') {
+                    if (username === 'admin' && trimmedInput === 'root') {
+                        setLines(prev => [...prev, 'Password: ****', '', 'Authentication successful. Welcome, admin.', 'Loading RE Lab environment...']);
+                        setLoginStep('success');
+                        setTimeout(() => onLogin(), 2000);
+                    } else {
+                        setLines(prev => [...prev, 'Password: ****', '', 'Authentication failed. Please try again.', '']);
+                        setLoginStep('username');
+                        setPrompt('Username: ');
+                    }
+                }
+            };
+
+            return (
+                <div className="min-h-screen bg-hacker-bg flex justify-center items-center animate-fadeIn">
+                    <div className="w-full max-w-3xl h-[50vh] bg-hacker-dark border-2 border-hacker-border rounded-lg shadow-glow-cyan">
+                        <Terminal lines={lines} onCommand={handleLoginCommand} showInput={loginStep !== 'success'} prompt={prompt} />
+                    </div>
+                </div>
+            );
+        };
+
+        // --- Main Application Component ---
+        function Game({ onResetRequest }) {
+            const [gameState, setGameState] = useState('INSPECTION');
+            const [selectedTool, setSelectedTool] = useState(null);
+            const [connections, setConnections] = useState([]);
+            const [terminalLines, setTerminalLines] = useState([ 'Welcome to the Hardware RE Lab.' ]);
+            const [showTerminalInput, setShowTerminalInput] = useState(false);
+            const [showAnimation, setShowAnimation] = useState(null);
+            const [outputTab, setOutputTab] = useState('terminal');
+
+            const workspaceRef = useRef(null);
+
+            const isPoweredOn = useMemo(() => {
+                const currentConnections = new Set(connections.map(c => `${c.tool}-${c.pin}`));
+                return CORRECT_CONNECTIONS.power.size === [...CORRECT_CONNECTIONS.power].filter(c => currentConnections.has(c)).length;
+            }, [connections]);
+            
+            const isUartConnected = useMemo(() => {
+                const currentConnections = new Set(connections.map(c => `${c.tool}-${c.pin}`));
+                return CORRECT_CONNECTIONS.uart.size === [...CORRECT_CONNECTIONS.uart].filter(c => currentConnections.has(c)).length;
+            }, [connections]);
+
+            const addTerminalLine = (text, type = 'INFO') => {
+                const colors = { SUCCESS: 'text-hacker-green', ERROR: 'text-red-500', INFO: 'text-hacker-cyan', WARN: 'text-hacker-orange' };
+                const prefix = type === 'SUCCESS' ? '[+] ' : type === 'ERROR' ? '[-] ' : type === 'WARN' ? '[!] ' : '[*] ';
+                setTerminalLines(prev => [...prev, `<span class="${colors[type]}">${prefix}</span>${text}`]);
+            };
+
+            useEffect(() => {
+                if(isPoweredOn && gameState === 'INSPECTION') {
+                    addTerminalLine('System Power detected. LED is ON.', 'SUCCESS');
+                    setGameState('ACCESS');
+                }
+            }, [isPoweredOn, gameState]);
+            
+            useEffect(() => {
+                if(isPoweredOn && isUartConnected && gameState === 'ACCESS') {
+                    addTerminalLine('UART interface connected successfully.', 'SUCCESS');
+                    addTerminalLine('Starting boot log stream...');
+                    setGameState('DUMPING');
+                    
+                    let logIndex = 0;
+                    const interval = setInterval(() => {
+                        if (logIndex < BOOT_LOG_SEQUENCE.length) {
+                            setTerminalLines(prev => [...prev, `<span class="text-hacker-gray">${BOOT_LOG_SEQUENCE[logIndex]}</span>`]);
+                            logIndex++;
+                        } else {
+                            clearInterval(interval);
+                            addTerminalLine("\\nType <span class='text-hacker-orange'>dump_firmware</span> to extract the firmware.", 'INFO');
+                            setShowTerminalInput(true);
+                        }
+                    }, 400);
+                }
+            }, [isPoweredOn, isUartConnected, gameState]);
+
+            const handleToolSelect = (tool) => {
+                if (connections.find(c => c.tool === tool)) return;
+                setSelectedTool(tool);
+            };
+
+            const handlePinClick = (pinId) => {
+                if (!selectedTool) {
+                    addTerminalLine('Select a tool from the toolkit first!', 'WARN');
+                    return;
+                }
+                if (connections.find(c => c.pin === pinId)) return;
+                
+                setConnections(prev => [...prev, { tool: selectedTool, pin: pinId }]);
+                addTerminalLine(`Connected ${selectedTool} to ${PINS_CONFIG[pinId].label}.`);
+                setSelectedTool(null);
+            };
+
+            const handleTerminalCommand = (command) => {
+                addTerminalLine(`> ${command}`);
+                const trimmedCommand = command.trim();
+                const [cmd, arg] = trimmedCommand.split(' ');
+
+                if (gameState === 'DUMPING' && trimmedCommand.toLowerCase() === 'dump_firmware') {
+                    setShowTerminalInput(false);
+                    setShowAnimation('dump');
+                } else if (gameState === 'ANALYSIS' && cmd.toLowerCase() === 'call' && arg === 'grant_access') {
+                    addTerminalLine('Executing function call: grant_access()', 'SUCCESS');
+                    addTerminalLine('Vulnerability exploited. Device relay enabled.', 'SUCCESS');
+                    setGameState('EXPLOITATION');
+                } else {
+                    addTerminalLine("Command not recognized or invalid in current state.", "ERROR");
+                }
+            };
+            
+            const handleDumpComplete = () => {
+                setShowAnimation('decompile');
+            };
+
+            const handleDecompilationComplete = () => {
+                 setShowAnimation(null);
+                 setGameState('ANALYSIS');
+                 setOutputTab('analysis');
+                 addTerminalLine('Decompilation complete. Analyze the code for vulnerabilities.', 'SUCCESS');
+                 addTerminalLine("HINT: Use <span class='text-hacker-orange'>call &lt;function_name&gt;</span> to execute functions.", "INFO");
+                 setShowTerminalInput(true);
+            };
+
+            const getPinPosition = (pinId) => {
+                if (!workspaceRef.current) return { x: 0, y: 0 };
+                const pinElement = document.getElementById(`pin-${pinId}`);
+                if (!pinElement) return { x: 0, y: 0 };
+                const workspaceRect = workspaceRef.current.getBoundingClientRect();
+                const pinRect = pinElement.getBoundingClientRect();
+                return { x: pinRect.left - workspaceRect.left + pinRect.width / 2, y: pinRect.top - workspaceRect.top + pinRect.height / 2 };
+            };
+            
+            const getToolPosition = (toolId) => {
+                if (!workspaceRef.current) return { x: 0, y: 0 };
+                const toolElement = document.getElementById(`tool-${toolId}`);
+                if (!toolElement) return { x: 0, y: 0 };
+                const workspaceRect = workspaceRef.current.getBoundingClientRect();
+                const toolRect = toolElement.getBoundingClientRect();
+                return { x: toolRect.left - workspaceRect.left + toolRect.width / 2, y: toolRect.top - workspaceRect.top + toolRect.height / 2 };
+            };
+            
+            const objectivesStatus = useMemo(() => {
+                const statuses = {};
+                statuses['INSPECTION'] = isPoweredOn || ['ACCESS', 'DUMPING', 'ANALYSIS', 'EXPLOITATION'].includes(gameState);
+                statuses['ACCESS'] = isUartConnected || ['DUMPING', 'ANALYSIS', 'EXPLOITATION'].includes(gameState);
+                statuses['DUMPING'] = ['ANALYSIS', 'EXPLOITATION'].includes(gameState);
+                statuses['ANALYSIS'] = gameState === 'EXPLOITATION';
+                statuses['EXPLOITATION'] = gameState === 'EXPLOITATION';
+                return statuses;
+            }, [gameState, isPoweredOn, isUartConnected]);
+
+            return (
+                <>
+                    {/* Animations and Overlays */}
+                    {showAnimation === 'dump' && <HexDumpAnimation onComplete={handleDumpComplete} />}
+                    {showAnimation === 'decompile' && <DecompilationAnimation onComplete={handleDecompilationComplete} />}
+                    {gameState === 'EXPLOITATION' && <WinScreen onReset={onResetRequest} />}
+
+                    <div className="min-h-screen bg-hacker-bg p-4 md:p-6 flex flex-col font-mono animate-fadeIn">
+                        <header className="flex justify-between items-center mb-4 flex-shrink-0">
+                            <h1 className="text-2xl md:text-3xl font-bold text-hacker-cyan">Hardware RE Lab</h1>
+                            <button onClick={onResetRequest} className="px-4 py-2 border border-hacker-orange text-hacker-orange rounded-lg hover:bg-hacker-orange hover:text-hacker-dark transition-all text-sm cursor-pointer">Reset Challenge</button>
+                        </header>
+                        
+                        <main className="flex-grow grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-0">
+                            {/* Left Panel: Objectives & Toolkit */}
+                            <div className="lg:col-span-3 flex flex-col gap-4 min-h-0">
+                                <Panel title="Mission Objectives">
+                                    <ul className="space-y-3">
+                                        {OBJECTIVES.map(({id, text}) => {
+                                            const isComplete = objectivesStatus[id];
+                                            const isCurrent = gameState === id;
+                                            return (
+                                                <li key={id} className={`flex items-start transition-all duration-300 ${isComplete ? 'text-hacker-gray' : 'text-white'}`}>
+                                                    <svg className={`w-5 h-5 mr-3 mt-0.5 flex-shrink-0 ${isComplete ? 'text-hacker-green' : 'text-hacker-border'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        {isComplete ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /> : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />}
+                                                    </svg>
+                                                    <span className={`${isComplete && 'line-through'}`}>{text}</span>
+                                                    {isCurrent && <span className="ml-2 w-2 h-2 rounded-full bg-hacker-cyan animate-pulse"></span>}
+                                                </li>
+                                            );
+                                        })}
+                                    </ul>
+                                </Panel>
+                                <Panel title="Toolkit">
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {Object.entries(TOOLS_CONFIG).map(([id, {label, color, icon}]) => {
+                                            const isConnected = connections.some(c => c.tool === id);
+                                            const isSelected = selectedTool === id;
+                                            return (
+                                                <button key={id} id={`tool-${id}`} onClick={() => handleToolSelect(id)} disabled={isConnected}
+                                                    className={`p-3 border rounded-md text-center transition-all flex flex-col items-center justify-center cursor-pointer
+                                                        ${isConnected ? 'bg-hacker-gray/10 text-hacker-gray' : 'hover:shadow-glow-cyan hover:border-hacker-cyan'}
+                                                        ${isSelected ? 'shadow-glow-cyan border-hacker-cyan' : 'border-hacker-border'}`}
+                                                >
+                                                    <svg className="w-6 h-6 mb-1" style={{color: isConnected ? '' : color}} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={icon} /></svg>
+                                                    <span className="font-bold text-sm" style={{color: isConnected ? '' : color}}>{label}</span>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </Panel>
+                            </div>
+
+                            {/* Center Panel: Workspace */}
+                            <div ref={workspaceRef} className="lg:col-span-5 bg-hacker-dark/80 backdrop-blur-sm p-4 border border-hacker-border rounded-lg relative flex justify-center items-center min-h-[350px] lg:min-h-0">
+                                <div className="relative w-full max-w-md h-72 bg-[#161b22] border-2 border-hacker-border p-4 rounded-lg shadow-lg">
+                                    <p className="absolute top-2 right-4 text-hacker-gray text-xs">Secure IoT Plug v2.1</p>
+                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-28 bg-black border-2 border-hacker-border flex flex-col justify-center items-center p-2">
+                                        <span className="text-white font-bold text-sm">STM32F103RGT6</span>
+                                        <span className="text-hacker-gray text-xs">ARM Cortex-M3</span>
+                                    </div>
+                                    <div className="absolute top-10 left-10 w-8 h-4 bg-gray-700"></div>
+                                    <div className="absolute top-16 left-10 w-8 h-4 bg-gray-700"></div>
+                                    <div className="absolute bottom-10 right-10 w-4 h-8 bg-gray-700"></div>
+                                    <div className={`absolute bottom-4 left-4 w-4 h-4 rounded-full border-2 transition-all ${isPoweredOn ? 'border-red-500 bg-red-500 shadow-glow-red animate-pulse' : 'border-red-800 bg-red-900'}`}></div>
+                                    <span className={`absolute bottom-4 left-10 text-xs transition-colors ${isPoweredOn ? 'text-red-400' : 'text-hacker-gray'}`}>PWR</span>
+                                    <div className={`absolute bottom-4 right-4 w-4 h-4 rounded-full border-2 transition-all ${gameState === 'EXPLOITATION' ? 'border-hacker-green bg-hacker-green shadow-glow-green animate-pulse' : 'border-green-800 bg-green-900'}`}></div>
+                                    <span className={`absolute bottom-4 right-10 text-xs transition-colors ${gameState === 'EXPLOITATION' ? 'text-hacker-green' : 'text-hacker-gray'}`}>RELAY</span>
+
+                                    {Object.entries(PINS_CONFIG).map(([id, { label, x, y }]) => (
+                                        <div key={id} id={`pin-${id}`} onClick={() => handlePinClick(id)}
+                                            className="absolute w-6 h-3 bg-gray-600 transform cursor-pointer hover:bg-hacker-cyan"
+                                            style={{ top: `${y}%`, left: `${x}%`, transform: `translate(-${x > 50 ? 0 : 100}%, -50%)` }}
+                                            title={label}
+                                        ></div>
+                                    ))}
+                                </div>
+                                <svg className="absolute top-0 left-0 w-full h-full pointer-events-none z-10">
+                                    {connections.map(({tool, pin}, index) => {
+                                        const toolPos = getToolPosition(tool);
+                                        const pinPos = getPinPosition(pin);
+                                        return (
+                                            <path key={index} d={`M ${toolPos.x} ${toolPos.y} C ${toolPos.x} ${pinPos.y}, ${pinPos.x} ${toolPos.y}, ${pinPos.x} ${pinPos.y}`}
+                                                stroke={TOOLS_CONFIG[tool].color} strokeWidth="3" fill="transparent"
+                                                className="animate-fadeIn"
+                                            />
+                                        )
+                                    })}
+                                </svg>
+                            </div>
+                            
+                            {/* Right Panel: Console/Analysis */}
+                            <div className="lg:col-span-4 bg-hacker-dark/80 backdrop-blur-sm border border-hacker-border rounded-lg min-h-[400px] lg:min-h-0 flex flex-col">
+                                {gameState === 'ANALYSIS' || gameState === 'EXPLOITATION' ? (
+                                    <>
+                                    <div className="flex border-b border-hacker-border flex-shrink-0">
+                                        <button onClick={() => setOutputTab('terminal')} className={`flex-1 p-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${outputTab === 'terminal' ? 'tab-active' : 'border-transparent text-hacker-gray hover:bg-hacker-dark'}`}>Terminal</button>
+                                        <button onClick={() => setOutputTab('analysis')} className={`flex-1 p-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${outputTab === 'analysis' ? 'tab-active' : 'border-transparent text-hacker-gray hover:bg-hacker-dark'}`}>Firmware Analysis</button>
+                                    </div>
+                                    <div className="flex-grow min-h-0">
+                                        {outputTab === 'terminal' && <Terminal lines={terminalLines} onCommand={handleTerminalCommand} showInput={showTerminalInput} prompt="> " />}
+                                        {outputTab === 'analysis' && <pre className="text-xs text-white whitespace-pre-wrap p-4 h-full overflow-y-auto">{DECOMPILED_CODE}</pre>}
+                                    </div>
+                                    </>
+                                ) : (
+                                    <div className="flex-grow min-h-0">
+                                        <Terminal lines={terminalLines} onCommand={handleTerminalCommand} showInput={showTerminalInput} prompt="> " />
+                                    </div>
+                                )}
+                            </div>
+                        </main>
+                    </div>
+                </>
+            );
+        }
+
+        function App() {
+            const [appState, setAppState] = useState('login'); // login -> game
+
+            const handleLogin = () => setAppState('game');
+            const handleReset = () => setAppState('login');
+
+            return (
+                <>
+                    <CursorManager />
+                    <CustomCursor />
+                    {appState === 'login' && <LoginPage onLogin={handleLogin} />}
+                    {appState === 'game' && <Game onResetRequest={handleReset} />}
+                </>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
