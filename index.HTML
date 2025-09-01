@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BLACKLAYER LABS - RE Simulator</title>
+    <title>ICS/OT Cyber Range</title>
     
     <!-- Tailwind CSS via Play CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -16,7 +16,7 @@
     <!-- Google Fonts: Fira Code -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Tinos:wght@400;700&display=swap" rel="stylesheet">
 
     <script>
         // Custom Tailwind CSS Configuration for BLACKLAYER LABS
@@ -25,32 +25,52 @@
                 extend: {
                     fontFamily: {
                         mono: ['Fira Code', 'monospace'],
+                        serif: ['Tinos', 'serif'],
                     },
                     colors: {
-                        'bl-black': '#000000',
-                        'bl-dark': '#111111',
-                        'bl-mid': '#222222',
-                        'bl-border': '#333333',
-                        'bl-gray': '#999999',
-                        'bl-light-gray': '#CCCCCC',
-                        'bl-white': '#FFFFFF',
-                        'bl-power': '#ef4444', // Red for power
-                        'bl-relay': '#39d353', // Green for relay
+                        'bl-black': '#0a0a0a',
+                        'bl-dark': '#121212',
+                        'bl-mid': '#1a1a1a',
+                        'bl-border': '#2e2e2e',
+                        'bl-gray': '#888888',
+                        'bl-light-gray': '#cccccc',
+                        'bl-white': '#fafafa',
+                        'bl-power': '#ef4444', 
+                        'bl-success': '#39d353',
+                        'bl-info': '#3b82f6',
+                        'bl-warning': '#facc15',
                     },
                     boxShadow: {
-                        'glow-white': '0 0 15px rgba(255, 255, 255, 0.4)',
+                        'glow-white': '0 0 15px rgba(255, 255, 255, 0.2)',
                         'glow-red': '0 0 15px rgba(239, 68, 68, 0.6)',
                         'glow-green': '0 0 15px rgba(57, 211, 83, 0.6)',
+                        'glow-yellow': '0 0 20px rgba(250, 204, 21, 0.7)',
+                        'panel': '0 4px 14px 0 rgba(0, 0, 0, 0.25)',
                     },
                     keyframes: {
                         fadeIn: { '0%': { opacity: 0 }, '100%': { opacity: 1 } },
                         fadeOut: { '0%': { opacity: 1 }, '100%': { opacity: 0 } },
                         blink: { '50%': { opacity: 0 } },
+                        pulseSlow: { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.5 } },
+                        vibrate: {
+                            '0%, 100%': { transform: 'translate(0, 0)' },
+                            '20%': { transform: 'translate(-1px, 1px)' },
+                            '40%': { transform: 'translate(1px, -1px)' },
+                            '60%': { transform: 'translate(-1px, -1px)' },
+                            '80%': { transform: 'translate(1px, 1px)' },
+                        },
+                        flow: {
+                            '0%': { 'stroke-dashoffset': 20 },
+                            '100%': { 'stroke-dashoffset': 0 }
+                        }
                     },
                     animation: {
                         fadeIn: 'fadeIn 1s ease-in-out',
                         fadeOut: 'fadeOut 1s ease-in-out',
                         blink: 'blink 1s step-end infinite',
+                        pulseSlow: 'pulseSlow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        vibrate: 'vibrate 0.1s linear infinite',
+                        flow: 'flow 1.5s linear infinite'
                     }
                 }
             }
@@ -58,40 +78,38 @@
     </script>
 
     <style>
-        /* General Body Styling & Background Effect */
         body, html {
-            background-color: #000000;
-            cursor: none; /* Hide default cursor */
+            background-color: #0a0a0a;
+            cursor: none;
         }
         body {
-            background-image: 
-                linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-            background-size: 30px 30px;
+            background-image: radial-gradient(#1a1a1a 1px, transparent 1px);
+            background-size: 20px 20px;
             color: #CCCCCC;
             font-family: 'Fira Code', monospace;
         }
-        /* Custom scrollbar */
         ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #111111; }
-        ::-webkit-scrollbar-thumb { background: #333333; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #FFFFFF; }
+        ::-webkit-scrollbar-track { background: #121212; }
+        ::-webkit-scrollbar-thumb { background: #2e2e2e; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #fafafa; }
         .tab-active {
-            background-color: #111111;
-            color: #FFFFFF;
-            border-bottom-color: #FFFFFF;
+            background-color: #1a1a1a;
+            color: #fafafa;
         }
-        
-        /* Cursor Styling */
         .custom-cursor {
             opacity: 1;
             transition: opacity 0.2s ease-in-out;
         }
-        .cursor-hidden .custom-cursor {
-            opacity: 0;
-        }
+        .cursor-hidden .custom-cursor { opacity: 0; }
         .cursor-pointer-active { cursor: pointer; }
         .cursor-text-active { cursor: text; }
+        .schematic-bg {
+            background-color: #0a0a0a;
+            background-image: 
+                linear-gradient(rgba(46, 46, 46, 0.5) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(46, 46, 46, 0.5) 1px, transparent 1px);
+            background-size: 2rem 2rem;
+        }
     </style>
 </head>
 <body>
@@ -99,87 +117,186 @@
 
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo } = React;
-
-        // --- Configuration Data ---
-        const PINS_CONFIG = {
-            P_VCC: { label: 'VCC', x: 5, y: 15, type: 'POWER' },
-            P_GND: { label: 'GND', x: 5, y: 30, type: 'POWER' },
-            J_TCK: { label: 'TCK', x: 5, y: 55, type: 'JTAG' },
-            J_TDO: { label: 'TDO', x: 5, y: 70, type: 'JTAG' },
-            J_TMS: { label: 'TMS', x: 5, y: 85, type: 'JTAG' },
-            B_TX: { label: 'TXD0', x: 95, y: 15, type: 'UART' },
-            B_RX: { label: 'RXD0', x: 95, y: 30, type: 'UART' },
-            S_CS: { label: 'CS', x: 95, y: 55, type: 'SPI' },
-            S_MOSI: { label: 'MOSI', x: 95, y: 70, type: 'SPI' },
-            S_CLK: { label: 'CLK', x: 95, y: 85, type: 'SPI' },
-        };
-
-        const TOOLS_CONFIG = {
-            VCC: { label: 'VCC', color: '#ef4444', icon: 'M13 10V3L4 14h7v7l9-11h-7z' },
-            GND: { label: 'GND', color: '#999999', icon: 'M13 13h-2v-2h2v2zm-4 0H7v-2h2v2zm-4 0H3v-2h2v2zm12-4h-2V7h2v2zm-4 0H9V7h2v2zm-4 0H5V7h2v2zm12-4h-2V3h2v2zm-4 0H9V3h2v2z' },
-            TX: { label: 'TX', color: '#FFFFFF', icon: 'M4 12h16m-7-7l7 7-7 7' },
-            RX: { label: 'RX', color: '#CCCCCC', icon: 'M20 12H4m7 7l-7-7 7-7' },
-        };
-
-        const CORRECT_CONNECTIONS = {
-            power: new Set(['VCC-P_VCC', 'GND-P_GND']),
-            uart: new Set(['TX-B_RX', 'RX-B_TX']),
-        };
         
-        const OBJECTIVES = [
-            { id: 'INSPECTION', text: 'Power on the device.' },
-            { id: 'ACCESS', text: 'Connect to the UART interface.' },
-            { id: 'DUMPING', text: 'Dump the device firmware.' },
-            { id: 'ANALYSIS', text: 'Analyze firmware for vulnerabilities.' },
-            { id: 'EXPLOITATION', text: 'Exploit the vulnerability to enable the relay.' },
-        ];
+        // --- USER DATABASE ---
+        const USER_DATABASE = {
+            "root": { password: "root", fullName: "Admin" },
+            "Dr. THEJASWINI M": { password: "mthejaswini.cse@iiitbh.ac.in", fullName: "Dr. THEJASWINI M" },
+            "Ms. Makwana Priyanka B": { password: "d24cs004@coed.svnit.ac.in", fullName: "Ms. Makwana Priyanka B" },
+            "Mr. ADARSH KUMAR": { password: "d23cs002@coed.svnit.ac.in", fullName: "Mr. ADARSH KUMAR" },
+            "Mrs. ASMITHA K A": { password: "asmithaphd21@gmail.com", fullName: "Mrs. ASMITHA K A" },
+            "Mr. VISHAL MISHRA": { password: "vmj644496@gmail.com", fullName: "Mr. VISHAL MISHRA" },
+            "Mr. MUHAMMED SHAFI K P": { password: "shafikp@cusat.ac.in", fullName: "Mr. MUHAMMED SHAFI K P" },
+            "Mr. RAKESH RANA": { password: "ranarakesh8328@gmail.com", fullName: "Mr. RAKESH RANA" },
+            "Mr. ROCKY KUMAR": { password: "rockykumar18031@gmail.com", fullName: "Mr. ROCKY KUMAR" },
+            "Dr. RAJ VIKRAM": { password: "mail2rajvikram@gmail.com", fullName: "Dr. RAJ VIKRAM" },
+            "Mr. ANKUSH": { password: "ankush_m240980cs@nitc.ac.in", fullName: "Mr. ANKUSH" },
+            "Mr. RAJESH SHARMA": { password: "rajesh_m241119cs@nitc.ac.in", fullName: "Mr. RAJESH SHARMA" },
+            "Dr. RAFIDHA REHIMAN K A": { password: "rafidharehimanka@cusat.ac.in", fullName: "Dr. RAFIDHA REHIMAN K A" },
+            "Mr. AYUSHMAN SINGH": { password: "ayush02ansh@gmail.com", fullName: "Mr. AYUSHMAN SINGH" },
+            "Mr. MANISH KUMAR MEHER": { password: "manishkumarmeher.official@gmail.com", fullName: "Mr. MANISH KUMAR MEHER" },
+            "Dr. AMRITHA P P": { password: "ammuviju@gmail.com", fullName: "Dr. AMRITHA P P" },
+            "Ms. BHAVISHABEN HARESHBHAI PATEL": { password: "bhapatel-CO21@student.vnsgu.ac.in", fullName: "Ms. BHAVISHABEN HARESHBHAI PATEL" },
+            "Mr. VISHNU R": { password: "vishnu_m241103cs@nitc.ac.in", fullName: "Mr. VISHNU R" },
+            "Mr. PANKAJ KUMAR": { password: "pankaj31122003@gmail.com", fullName: "Mr. PANKAJ KUMAR" },
+            "Mr. HARIKRISHNAN J": { password: "harikrishnan_m240989cs@nitc.ac.in", fullName: "Mr. HARIKRISHNAN J" },
+            "Mr. P SHANMUKH": { password: "shanmukhpabbineedi@gmail.com", fullName: "Mr. P SHANMUKH" },
+            "Mr. PRASHANT DWIVEDI": { password: "prashantdwivedi230@gmail.com", fullName: "Mr. PRASHANT DWIVEDI" },
+            "Dr. VIJAY ANAND": { password: "vijayanand@psnacet.edu.in", fullName: "Dr. VIJAY ANAND" },
+            "Mr. PRABHAKARAN R": { password: "prabhakaran@psnacet.edu.in", fullName: "Mr. PRABHAKARAN R" },
+            "Ms. SRAVANI KOKA": { password: "koka.sravani@gmail.com", fullName: "Ms. SRAVANI KOKA" },
+            "Mr. OMKAR KULKARNI": { password: "omekmhd@gmail.com", fullName: "Mr. OMKAR KULKARNI" },
+            "Mr. KASIBHATLA AVINASH": { password: "avinash91kasibhatla@gmail.com", fullName: "Mr. KASIBHATLA AVINASH" },
+            "Mr. RAJNISH SINGH": { password: "singh11rajnish@gmail.com", fullName: "Mr. RAJNISH SINGH" },
+            "Mr. RAHUL YADAV": { password: "rahul.2024rcs07@mnnit.ac.in", fullName: "Mr. RAHUL YADAV" },
+            "Mr. SAJEEVAN K": { password: "25cse3007@nitgoa.ac.in", fullName: "Mr. SAJEEVAN K" },
+            "Dr. ABHILASHA CHAUDHURI": { password: "abhilasha@coed.svnit.ac.in", fullName: "Dr. ABHILASHA CHAUDHURI" },
+            "Mr. SUNDEEP SETHI": { password: "sundeep807@gmail.com", fullName: "Mr. SUNDEEP SETHI" },
+            "Mr. NAYANKUMAR MAHENDRAKUMAR MALI": { password: "it.nayanmali@adit.ac.in", fullName: "Mr. NAYANKUMAR MAHENDRAKUMAR MALI" },
+            "Dr. MOHD SHOAIB": { password: "mohdshoaib@zhcet.ac.in", fullName: "Dr. MOHD SHOAIB" },
+            "Mrs. APPIKATLA NAGA PRAVALLIKA": { password: "appikatlapravallika318@gmail.com", fullName: "Mrs. APPIKATLA NAGA PRAVALLIKA" },
+            "Mrs. MANAM BHAVYA LAKSHMI": { password: "bhavyamedasani@pvpsiddhartha.ac.in", fullName: "Mrs. MANAM BHAVYA LAKSHMI" },
+            "Dr. JAGDEEP SINGH": { password: "jagdeepmalhi@gndec.ac.in", fullName: "Dr. JAGDEEP SINGH" },
+            "Mrs. RUCHI BHASKAR": { password: "rbhaskar@gweca.ac.in", fullName: "Mrs. RUCHI BHASKAR" },
+            "Mr. ADITYA RAJ": { password: "aditya190904@gmail.com", fullName: "Mr. ADITYA RAJ" },
+            "Mr. VISHWAS KUMAR": { password: "vkumar.phd2023.it@nitrr.ac.in", fullName: "Mr. VISHWAS KUMAR" },
+        };
 
-        const BOOT_LOG_SEQUENCE = ['Booting SecureOS v3.0...', 'Kernel initializing...', 'Memory check: 512KB RAM... OK.', 'Initializing Flash Storage (W25Q32)...', 'Mounting root filesystem...', 'Starting system services...', 'Network interface eth0: DOWN.', 'Starting login shell on ttyS0 (UART0)...', 'Secure IoT Device Ready.', 'login: '];
-        const DECOMPILED_CODE = `// Firmware Analysis for Secure IoT Plug v3.0
-// Decompilation complete.
+        // --- LAB CONFIGURATIONS ---
+        const LABS = {
+            ics_recon: {
+                name: "ICS Network Recon & Malware Analysis",
+                objectives: [
+                    { id: 'SCAN', text: 'Map the OT network segment.' },
+                    { id: 'CAPTURE', text: 'Capture and inspect network traffic.' },
+                    { id: 'STATIC_ANALYSIS', text: 'Perform static analysis on sample file.' },
+                    { id: 'BEHAVIORAL_ANALYSIS', text: 'Perform behavioral analysis.' },
+                    { id: 'REPORT', text: 'Report the malware\'s key persistence mechanism.' },
+                ],
+                initialState: 'START',
+                winState: 'WIN',
+                terminalOutputs: {
+                    NMAP: `Starting Nmap 7.92 ( https://nmap.org ) at 2025-08-24 06:15 IST...
+Nmap scan report for 192.168.1.50 -> Host is up. PORT 502/tcp open modbus. OS: Siemens S7 PLC
+Nmap scan report for 192.168.1.75 -> Host is up. PORT 80/tcp open http. OS: Windows 10 IoT
+Nmap done: 256 IP addresses (2 hosts up) scanned.`,
+                    WIRESHARK: `No. Time      Source         Destination    Protocol Info
+1   0.000000  192.168.1.10   192.168.1.50   MODBUS   Query: Read Registers
+2   1.005678  192.168.1.75   192.168.1.50   S7COMM   Job Request: Read SZL`,
+                    PESTUDIO: `File: updater.exe
+MD5: e5d9b9a5e54c2533b292d85a1e28d07e
+---
+Suspicious Characteristics:
+- Imports: CreateProcessA, WriteFile, RegSetValueExA
+- Strings: C:\\Users\\Public\\svchost.exe, SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run`,
+                    PROCMON: `Time       Process Name   PID   Operation      Path                                                              Result
+06:18:12   updater.exe    1337  RegSetValue    hkcu\software\microsoft\windows\currentversion\run\systemupdate   SUCCESS
+06:18:13   updater.exe    1337  Process Create C:\\Users\\Public\\svchost.exe                                   SUCCESS`
+                }
+            },
+            stuxnet: {
+                name: "Stuxnet Attack Simulation",
+                objectives: [
+                    { id: 'USB_ANALYSIS', text: 'Analyze infected USB to gain initial access.' },
+                    { id: 'PROPAGATE', text: 'Propagate to the Engineering Workstation (EWS).' },
+                    { id: 'FIND_TARGET', text: 'Identify Siemens Step7 software on the EWS.' },
+                    { id: 'INJECT_PLC', text: 'Inject malicious code into the S7-315 PLC.' },
+                    { id: 'SABOTAGE', text: 'Manipulate PLC logic to alter centrifuge frequency.' },
+                    { id: 'REPORT', text: 'Report the final sabotage command.' },
+                ],
+                initialState: 'USB_ANALYSIS',
+                winState: 'WIN',
+                terminalOutputs: {
+                    USB_ANALYSIS: `Analyzing 'F:\\'...
+LNK file exploits CVE-2010-2568 (Shell LNK Vulnerability).
+Payload 'mrkxcls.sys' dropped. Initial access gained.`,
+                    PROPAGATE: `Scanning 10.10.10.0/24...
+Host 10.10.10.20 (EWS) is vulnerable to MS08-067 (Conficker).
+Exploiting... Success. Shell established on EWS.`,
+                    FIND_TARGET: `Searching for target software on EWS...
+Found Siemens Step7 installation at 'C:\\Program Files\\Siemens\\Step7'. Target confirmed.`,
+                    INJECT_PLC: `Enumerating connected devices...
+Found PLC: Siemens S7-315-2.
+Injecting payload into PLC. Rootkit installed. Replaying normal values to HMI.`,
+                    SABOTAGE_HMI: `[HMI READOUT]: 1000 Hz (Normal)`,
+                    SABOTAGE_ACTUAL: `[ACTUAL SENSOR]: 1410 Hz (Over-frequency!)`
+                }
+            },
+            havex: {
+                name: "The Havex Malware Campaign",
+                objectives: [
+                    { id: 'INITIAL_BREACH', text: 'Gain initial access via trojanized vendor software.' },
+                    { id: 'RAT_INSTALL', text: 'Establish Command & Control communication.' },
+                    { id: 'OPC_RECON', text: 'Scan the OT network using the OPC protocol.' },
+                    { id: 'DEPLOY_PAYLOADS', text: 'Deploy Karagany to steal credentials.' },
+                    { id: 'EXFILTRATE', text: 'Exfiltrate gathered intelligence.' },
+                    { id: 'REPORT', text: 'Report the key exfiltrated data file.' },
+                ],
+                initialState: 'INITIAL_BREACH',
+                winState: 'WIN',
+                terminalOutputs: {
+                    INITIAL_BREACH: `Executing 'setup.exe'...
+Hidden payload 'msx.dll' (Havex RAT) dropped to %TEMP%.
+Process injected. Initial breach successful.`,
+                    RAT_INSTALL: `RAT active. Establishing C&C connection...
+Beaconing to 188.40.100.55... [SUCCESS]
+Remote access established. Awaiting commands.`,
+                    OPC_RECON: `Executing OPC scan module...
+Scanning for OPC servers on ports 44818, 105, 502...
+Found OPC Server: 'Siemens.OPC.DA' on 192.168.1.75
+Querying server info...
+OPC Tags discovered: "Motor.RPM", "Valve.Status", "Pressure.PSI"
+Reconnaissance complete.`,
+                    DEPLOY_PAYLOADS: `Deploying secondary payload...
+Injecting 'karagany.dll' into explorer.exe.
+LSASS dump... [SUCCESS]
+Screenshot captured... [SUCCESS]`,
+                    EXFILTRATE: `Packaging gathered intelligence...
+- Network Map, OPC Server Data, Credentials, Screenshots
+Compressing to 'opc_data.zip'.
+Exfiltrating 'opc_data.zip' to C&C... [SUCCESS]`
+                }
+            },
+            final_exam: {
+                name: "Final Exam: Coordinated Attack Scenario",
+                objectives: [
+                    { id: 'WEB_EXPLOIT', text: 'Exploit public web server vulnerability.' },
+                    { id: 'PIVOT_OT', text: 'Pivot from IT to the OT network.' },
+                    { id: 'FIND_PLC', text: 'Identify the primary process controller PLC.' },
+                    { id: 'COORDINATED_ATTACK', text: 'Manipulate PLC and blind the HMI.' },
+                    { id: 'IMPACT', text: 'Cause a controlled process shutdown.' },
+                    { id: 'CLEANUP', text: 'Erase logs on compromised EWS.' },
+                    { id: 'REPORT', text: 'Report the final shutdown command.' },
+                ],
+                initialState: 'WEB_EXPLOIT',
+                winState: 'WIN',
+                terminalOutputs: {
+                    WEB_EXPLOIT: `Scanning 203.0.113.10...
+Found Apache Struts 2 (CVE-2017-5638).
+Exploiting... Success. Shell gained on WEB-SRV-01.`,
+                    PIVOT_OT: `Found network interface 'eth1' on 10.0.1.5/24.
+Pivoting through WEB-SRV-01...
+Successfully established tunnel to IT network.`,
+                    FIND_PLC: `Scanning 192.168.1.0/24 from EWS...
+Host 192.168.1.100 is up. PORT 44818/tcp open (EtherNet/IP).
+Device identified: Rockwell ControlLogix PLC.`,
+                    COORDINATED_ATTACK: `Deploying HMI intercept... HMI now shows 'NOMINAL'.
+Connecting to PLC... Bypassing safety logic...`,
+                    IMPACT: `Executing 'write_coil(coil=0, value=0)' command...
+Process shutdown signal sent. Main valve closed.
+[IMPACT]: Process halted successfully.`,
+                    CLEANUP: `Searching for logs on EWS...
+Found '/var/log/auth.log'.
+Executing 'shred -u /var/log/auth.log'...
+Logs successfully erased.`
+                }
+            }
+        };
 
-void initialize_system() {
-    setup_gpio();
-    setup_uart(115200);
-    printf("System Initialized.\\n");
-}
-
-// Hidden function to grant administrative access
-void grant_access() {
-    printf("DEBUG: Admin access granted.\\n");
-    // This function enables the main power relay
-    set_relay_state(1); 
-}
-
-// Main execution loop
-int main() {
-    initialize_system();
-    
-    char username[16];
-    char password[16];
-
-    while(1) {
-        printf("login: ");
-        get_string(username, 16);
-        printf("password: ");
-        get_string(password, 16);
-
-        if (check_credentials(username, password)) {
-            printf("Welcome, user!\\n");
-            // Normal user access, no special privileges
-        } else {
-            printf("Access Denied.\\n");
-            // HINT: Is there a way to call functions directly?
-        }
-    }
-    return 0;
-}`;
-
-        // --- Helper Components ---
-        const CustomCursor = () => {
+        // --- GENERIC & REUSABLE COMPONENTS ---
+        function CustomCursor() {
             const vLineRef = useRef(null);
             const hLineRef = useRef(null);
-
             useEffect(() => {
                 const moveCursor = (e) => {
                     if (vLineRef.current) vLineRef.current.style.left = `${e.clientX}px`;
@@ -188,200 +305,91 @@ int main() {
                 window.addEventListener('mousemove', moveCursor);
                 return () => window.removeEventListener('mousemove', moveCursor);
             }, []);
-
             return (
                 <div className="custom-cursor fixed inset-0 pointer-events-none z-[9999]">
                     <div ref={vLineRef} className="absolute top-0 w-px h-full bg-bl-white/30 transform -translate-x-1/2"></div>
                     <div ref={hLineRef} className="absolute left-0 h-px w-full bg-bl-white/30 transform -translate-y-1/2"></div>
                 </div>
             );
-        };
+        }
 
-        const CursorManager = () => {
+        function CursorManager() {
             useEffect(() => {
                 const handleMouseMove = (e) => {
                     const target = e.target;
                     const body = document.body;
-
                     const isPointer = target.closest('button, a, .cursor-pointer');
                     const isText = target.closest('input, textarea, .cursor-text');
-
                     body.classList.toggle('cursor-hidden', isPointer || isText);
                     body.classList.toggle('cursor-pointer-active', isPointer);
                     body.classList.toggle('cursor-text-active', isText);
                 };
-
                 document.addEventListener('mousemove', handleMouseMove);
                 return () => document.removeEventListener('mousemove', handleMouseMove);
             }, []);
-
             return null;
-        };
+        }
 
-        const Panel = ({ title, children, className }) => (
-            <div className={`bg-bl-dark/80 backdrop-blur-sm border border-bl-border rounded-lg flex flex-col ${className}`}>
-                <h2 className="text-lg font-bold text-bl-white p-3 border-b border-bl-border flex-shrink-0">{title}</h2>
-                <div className="p-4 flex-grow overflow-auto">
-                    {children}
-                </div>
-            </div>
-        );
-
-        const Terminal = ({ lines, onCommand, showInput, prompt }) => {
+        function Terminal({ lines, onCommand, showInput, prompt }) {
             const [input, setInput] = useState('');
             const endOfMessagesRef = useRef(null);
-
             useEffect(() => { endOfMessagesRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [lines]);
-
             const handleKeyDown = (e) => {
                 if (e.key === 'Enter' && onCommand) {
                     onCommand(input);
                     setInput('');
                 }
             };
-            
             return (
-                <div className="bg-bl-dark h-full p-3 font-mono text-sm flex flex-col">
+                <div className="bg-bl-black/50 h-full p-3 font-mono text-sm flex flex-col rounded-b-lg">
                     <div className="flex-grow overflow-y-auto">
                         {lines.map((line, index) => <div key={index} className="whitespace-pre-wrap leading-relaxed" dangerouslySetInnerHTML={{ __html: line }} />)}
                         <div ref={endOfMessagesRef} />
                     </div>
                     {showInput && (
                          <div className="flex items-center mt-2 flex-shrink-0">
-                            <span className="text-bl-white mr-2">{prompt}</span>
-                            <input
-                                type={prompt.includes('Password') ? 'password' : 'text'}
-                                value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown}
-                                className="bg-transparent border-none text-bl-light-gray w-full focus:outline-none cursor-text" autoFocus
-                            />
+                             <span className="text-bl-success mr-2">{prompt}</span>
+                             <input
+                                 type="text"
+                                 value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown}
+                                 className="bg-transparent border-none text-bl-light-gray w-full focus:outline-none cursor-text" autoFocus
+                             />
                          </div>
                     )}
                 </div>
             );
-        };
-        
-        const FullScreenAnimation = ({ title, children }) => (
-            <div className="fixed inset-0 bg-bl-black/95 backdrop-blur-sm flex flex-col justify-center items-center z-[1000] animate-fadeIn p-8">
-                <h2 className="text-3xl text-bl-white font-bold mb-4">{title}</h2>
-                {children}
-            </div>
-        );
+        }
 
-        const HexDumpAnimation = ({ onComplete }) => {
-            const [lines, setLines] = useState([]);
-            const [progress, setProgress] = useState(0);
-            const baseAddress = 0x08000000;
-
-            const byteToAscii = (byte) => (byte >= 32 && byte <= 126 ? String.fromCharCode(byte) : '.');
-
-            const generateLine = (address) => {
-                const bytes = Array.from({ length: 16 }, () => Math.floor(Math.random() * 256));
-                const hex = bytes.map(b => b.toString(16).padStart(2, '0').toUpperCase()).join(' ');
-                const ascii = bytes.map(byteToAscii).join('');
-                return `<span class="text-bl-gray">0x${address.toString(16).toUpperCase()}:</span> <span class="text-bl-light-gray">${hex}</span>  |${ascii}|`;
-            };
-
-            useEffect(() => {
-                const totalSteps = 100;
-                let step = 0;
-                const interval = setInterval(() => {
-                    if (step < totalSteps) {
-                        setLines(prev => [...prev.slice(prev.length > 20 ? 1 : 0), generateLine(baseAddress + step * 16)]);
-                        setProgress((step / totalSteps) * 100);
-                        step++;
-                    } else {
-                        clearInterval(interval);
-                        setTimeout(onComplete, 1000);
-                    }
-                }, 50);
-                return () => clearInterval(interval);
-            }, [onComplete]);
-
+        function FullScreenAnimation({ children }) {
             return (
-                <FullScreenAnimation title="DUMPING FLASH MEMORY (W25Q32)">
-                    <div className="w-full max-w-4xl h-3/4 bg-bl-dark border border-bl-border rounded-lg p-4 font-mono text-sm overflow-hidden">
-                        {lines.map((line, i) => <p key={i} dangerouslySetInnerHTML={{ __html: line }} />)}
-                    </div>
-                    <div className="w-full max-w-4xl mt-4">
-                        <p className="text-bl-light-gray mb-2">Progress: {Math.round(progress)}%</p>
-                        <div className="w-full bg-bl-border rounded-full h-4">
-                            <div className="bg-bl-white h-4 rounded-full" style={{ width: `${progress}%` }}></div>
-                        </div>
-                    </div>
-                </FullScreenAnimation>
-            );
-        };
-
-        const DecompilationAnimation = ({ onComplete }) => {
-            const [status, setStatus] = useState('INITIALIZING...');
-            const [code, setCode] = useState('');
-            const stages = useMemo(() => [
-                { text: 'PARSING ELF HEADER...', duration: 1000 },
-                { text: 'ANALYZING DATA SECTIONS...', duration: 1500 },
-                { text: 'IDENTIFYING 5 FUNCTIONS...', duration: 1000 },
-                { text: 'GENERATING PSEUDO-CODE...', duration: 2000, action: () => setCode(DECOMPILED_CODE) },
-                { text: 'DECOMPILATION COMPLETE', duration: 1000 },
-            ], []);
-
-            useEffect(() => {
-                let currentStage = 0;
-                const runStage = () => {
-                    if (currentStage < stages.length) {
-                        const stage = stages[currentStage];
-                        setStatus(stage.text);
-                        if (stage.action) stage.action();
-                        setTimeout(() => {
-                            currentStage++;
-                            runStage();
-                        }, stage.duration);
-                    } else {
-                        onComplete();
-                    }
-                };
-                runStage();
-            }, [stages, onComplete]);
-
-            return (
-                <FullScreenAnimation title="DECOMPILING FIRMWARE">
-                    <div className="w-full max-w-4xl h-3/4 bg-bl-dark border border-bl-border rounded-lg p-4 font-mono text-sm overflow-y-auto">
-                        <pre className="text-bl-light-gray whitespace-pre-wrap">{code}</pre>
-                    </div>
-                    <div className="w-full max-w-4xl mt-4">
-                        <p className="text-bl-light-gray">STATUS: {status}<span className="animate-blink">_</span></p>
-                    </div>
-                </FullScreenAnimation>
-            );
-        };
-
-        const WinScreen = ({ onReset }) => (
-            <FullScreenAnimation title="">
-                <div className="text-center">
-                    <h2 className="text-5xl font-bold text-bl-white mb-4" style={{textShadow: '0 0 15px #FFFFFF'}}>VULNERABILITY EXPLOITED</h2>
-                    <p className="text-lg text-bl-gray mb-2">Device relay has been successfully enabled.</p>
-                    <p className="text-lg text-bl-gray mb-8">Mission accomplished.</p>
-                    <button onClick={onReset} className="px-8 py-3 border-2 border-bl-white text-bl-white rounded-lg text-xl hover:bg-bl-white hover:text-bl-black transition-all duration-300 shadow-lg hover:shadow-glow-white cursor-pointer">
-                        Restart Simulation
-                    </button>
+                <div className="fixed inset-0 bg-bl-black/95 backdrop-blur-sm flex flex-col justify-center items-center z-[1000] animate-fadeIn p-8">
+                    {children}
                 </div>
-            </FullScreenAnimation>
-        );
+            );
+        }
 
-        const SplashScreen = ({ onComplete }) => {
+        // --- ICON COMPONENTS ---
+        function UsbIcon({ className }) { return (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 19V5"/><path d="M16 5h-8v6h8V5z"/><path d="M10 19h4"/></svg>); }
+        function WorkstationIcon({ className }) { return (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>); }
+        function PlcIcon({ className }) { return (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line><path d="M15 13h2"/><path d="M15 17h2"/><path d="M6 13h2"/><path d="M6 17h2"/></svg>); }
+        function ServerIcon({ className }) { return (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>); }
+        function GlobeIcon({ className }) { return (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>); }
+
+
+        // --- AUTHENTICATION & DASHBOARD ---
+        function SplashScreen({ onComplete }) {
             const [lines, setLines] = useState([]);
             const bootSequence = useMemo(() => [
-                { text: 'SYSTEM BOOT ...', duration: 500 },
-                { text: 'INITIATING KERNEL ... [OK]', duration: 700 },
-                { text: 'LOADING VIRTUAL ENV ... [OK]', duration: 800 },
-                { text: 'BL4CKL4YER TECHNOLOGIES', duration: 100, isTitle: true },
-                { text: 'PRESENTS', duration: 1500, isSubtitle: true },
+                { text: 'SYSTEM BOOT ...', duration: 400 },
+                { text: 'INITIATING KERNEL ... [OK]', duration: 500 },
+                { text: 'LOADING VIRTUAL ENV ... [OK]', duration: 600 },
             ], []);
-            
             useEffect(() => {
                 let currentLine = 0;
                 const runSequence = () => {
                     if (currentLine < bootSequence.length) {
                         const line = bootSequence[currentLine];
-                        setLines(prev => [...prev, line]);
+                        setLines(prev => [...prev, line.text]);
                         setTimeout(() => {
                             currentLine++;
                             runSequence();
@@ -392,26 +400,29 @@ int main() {
                 };
                 runSequence();
             }, [bootSequence, onComplete]);
-
             return (
                 <div className="fixed inset-0 bg-bl-black flex flex-col justify-center items-center animate-fadeIn font-mono text-bl-light-gray">
-                    <div className="w-full max-w-xl text-left p-8">
+                    <div className="w-full max-w-2xl text-left p-8">
                         {lines.map((line, i) => (
-                            <div key={i} className={`animate-fadeIn ${line.isTitle ? 'text-4xl text-bl-white font-bold text-center mt-8' : ''} ${line.isSubtitle ? 'text-center text-bl-gray' : ''}`}>
-                                {line.text}
-                            </div>
+                            <div key={i} className="animate-fadeIn">{line}</div>
                         ))}
+                    </div>
+                     <div className="absolute bottom-10 text-center text-bl-gray px-4">
+                        <p className="text-lg font-bold text-bl-white">Organized by</p>
+                        <p className="text-xl font-bold text-bl-white mt-1">Electronics & ICT Academy, MNIT Jaipur</p>
+                        <p className="mt-2 text-md">in association with <span className="font-bold text-bl-light-gray">ArmorInnovate</span></p>
+                        <p className="mt-1 text-sm">powered by <span className="font-bold text-bl-light-gray">BL4CKL4YER TECHNOLOGIES</span></p>
                     </div>
                 </div>
             );
-        };
+        }
 
-        const LoginPage = ({ onLogin }) => {
-            const [lines, setLines] = useState(['RE-LAB Secure Terminal v5.0', 'Please authenticate to continue...', '']);
+        function LoginPage({ onLogin }) {
+            const [lines, setLines] = useState(['RE-LAB Secure Terminal v9.0', 'Please authenticate to continue...', '']);
             const [loginStep, setLoginStep] = useState('username');
             const [prompt, setPrompt] = useState('Username: ');
             const [username, setUsername] = useState('');
-
+            
             const handleLoginCommand = (input) => {
                 const trimmedInput = input.trim();
                 if (loginStep === 'username') {
@@ -420,13 +431,15 @@ int main() {
                     setLoginStep('password');
                     setPrompt('Password: ');
                 } else if (loginStep === 'password') {
-                    if (username === 'admin' && trimmedInput === 'root') {
-                        setLines(prev => [...prev, 'Password: ****', '', 'Authentication successful. Welcome, admin.', 'Loading RE Lab environment...']);
+                    const user = USER_DATABASE[username];
+                    if (user && trimmedInput === user.password) {
+                        setLines(prev => [...prev, 'Password: ****', '', `Authentication successful. Welcome, ${user.fullName}.`, 'Loading dashboard...']);
                         setLoginStep('success');
-                        setTimeout(() => onLogin(), 2000);
+                        setTimeout(() => onLogin(user.fullName), 2000);
                     } else {
                         setLines(prev => [...prev, 'Password: ****', '', 'Authentication failed. Please try again.', '']);
                         setLoginStep('username');
+                        setUsername('');
                         setPrompt('Username: ');
                     }
                 }
@@ -439,269 +452,919 @@ int main() {
                     </div>
                 </div>
             );
-        };
+        }
 
-        // --- Main Application Component ---
-        function Game({ onResetRequest }) {
-            const [gameState, setGameState] = useState('INSPECTION');
-            const [selectedTool, setSelectedTool] = useState(null);
-            const [connections, setConnections] = useState([]);
-            const [terminalLines, setTerminalLines] = useState([ 'Welcome to the BLACKLAYER LABS RE Environment.' ]);
-            const [showTerminalInput, setShowTerminalInput] = useState(false);
-            const [showAnimation, setShowAnimation] = useState(null);
-            const [outputTab, setOutputTab] = useState('terminal');
+        function Dashboard({ onLaunchLab, onShowCertificate, labCompletion, username }) {
+            const allLabsComplete = Object.values(labCompletion).every(Boolean);
+            const initialLines = [
+                `Welcome to the BLACKLAYER LABS Training Dashboard, ${username}.`,
+                'Type <span class="text-bl-white">\'labs\'</span> to see available simulations.',
+                'Type <span class="text-bl-white">\'launch [lab_id]\'</span> to begin.',
+                allLabsComplete ? 'All labs complete. Type <span class="text-bl-white">\'certificate\'</span> to generate your award.' : '',
+                ''
+            ].filter(Boolean);
 
-            const workspaceRef = useRef(null);
-
-            const isPoweredOn = useMemo(() => {
-                const currentConnections = new Set(connections.map(c => `${c.tool}-${c.pin}`));
-                return CORRECT_CONNECTIONS.power.size === [...CORRECT_CONNECTIONS.power].filter(c => currentConnections.has(c)).length;
-            }, [connections]);
+            const [lines, setLines] = useState(initialLines);
             
-            const isUartConnected = useMemo(() => {
-                const currentConnections = new Set(connections.map(c => `${c.tool}-${c.pin}`));
-                return CORRECT_CONNECTIONS.uart.size === [...CORRECT_CONNECTIONS.uart].filter(c => currentConnections.has(c)).length;
-            }, [connections]);
+            const getShortName = (fullName) => {
+                const parts = fullName.split(' ');
+                if (parts.length > 1) {
+                    return parts[1].toLowerCase();
+                }
+                return fullName.toLowerCase();
+            }
 
-            const addTerminalLine = (text, type = 'INFO') => {
-                const colors = { SUCCESS: 'text-bl-relay', ERROR: 'text-bl-power', INFO: 'text-bl-white', WARN: 'text-yellow-400' };
-                const prefix = type === 'SUCCESS' ? '[+] ' : type === 'ERROR' ? '[-] ' : type === 'WARN' ? '[!] ' : '[*] ';
-                setTerminalLines(prev => [...prev, `<span class="${colors[type]}">${prefix}</span>${text}`]);
+            const handleCommand = (command) => {
+                const [cmd, arg] = command.trim().toLowerCase().split(' ');
+                setLines(prev => [...prev, `<span class="text-bl-gray">> ${command}</span>`]);
+
+                if (cmd === 'labs') {
+                    const labList = Object.entries(LABS).map(([id, { name }]) => {
+                        const status = labCompletion[id] ? `<span class="text-bl-success">[COMPLETED]</span>` : `<span class="text-bl-gray">[PENDING]</span>`;
+                        return `  - ${id.padEnd(12, ' ')} ${status} ${name}`;
+                    });
+                    setLines(prev => [...prev, ...labList, '']);
+                } else if (cmd === 'launch') {
+                    if (LABS[arg]) {
+                        setLines(prev => [...prev, `Initializing lab: ${arg}...`]);
+                        setTimeout(() => onLaunchLab(arg), 1000);
+                    } else {
+                        setLines(prev => [...prev, `<span class="text-bl-power">Error: Lab '${arg}' not found.</span>`, '']);
+                    }
+                } else if (cmd === 'certificate' && allLabsComplete) {
+                    setLines(prev => [...prev, 'Generating certificate...']);
+                     setTimeout(onShowCertificate, 1000);
+                } else if (cmd === 'cert-override') {
+                    setLines(prev => [...prev, 'Bypassing lab completion. Generating certificate for testing...']);
+                    setTimeout(onShowCertificate, 1000);
+                }
+                else {
+                    setLines(prev => [...prev, `<span class="text-bl-power">Error: Command not recognized.</span>`, '']);
+                }
+            };
+            
+            return (
+                 <div className="min-h-screen bg-bl-black flex justify-center items-center animate-fadeIn">
+                     <div className="w-full max-w-4xl h-[70vh] bg-bl-dark border-2 border-bl-border rounded-lg shadow-glow-white flex flex-col">
+                        <h1 className="text-xl p-4 border-b border-bl-border font-bold text-bl-white">OPERATOR DASHBOARD</h1>
+                        <div className="flex-grow min-h-0">
+                            <Terminal lines={lines} onCommand={handleCommand} showInput={true} prompt={`${getShortName(username)}@dashboard:~$ `} />
+                        </div>
+                     </div>
+                 </div>
+            );
+        }
+
+        function FinalCertificateScreen({ onReset, username, completionTimes }) {
+            const formatTime = (seconds) => {
+                if (seconds === null || seconds === undefined) return 'N/A';
+                const minutes = Math.floor(seconds / 60);
+                const remainingSeconds = seconds % 60;
+                return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
             };
 
-            useEffect(() => {
-                if(isPoweredOn && gameState === 'INSPECTION') {
-                    addTerminalLine('System Power detected. LED is ON.', 'SUCCESS');
-                    setGameState('ACCESS');
-                }
-            }, [isPoweredOn, gameState]);
-            
-            useEffect(() => {
-                if(isPoweredOn && isUartConnected && gameState === 'ACCESS') {
-                    addTerminalLine('UART interface connected successfully.', 'SUCCESS');
-                    addTerminalLine('Starting boot log stream...');
-                    setGameState('DUMPING');
+            const generateCertificate = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = 1200;
+                canvas.height = 848;
+                const ctx = canvas.getContext('2d');
+
+                const loadImage = (src) => {
+                    return new Promise((resolve, reject) => {
+                        const img = new Image();
+                        img.crossOrigin = "anonymous";
+                        img.onload = () => resolve(img);
+                        img.onerror = (err) => reject(err);
+                        img.src = src;
+                    });
+                };
+
+                const stampUrl = "https://res.cloudinary.com/djpkxgani/image/upload/v1756666275/hello.svg_ddoagr.png";
+
+                loadImage(stampUrl).then((stampImage) => {
+                    // --- TERMINAL STYLING ---
+                    // Background
+                    ctx.fillStyle = '#0a0a0a'; // bl-black
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    // Terminal Header
+                    ctx.fillStyle = '#1a1a1a'; // bl-mid
+                    ctx.fillRect(0, 0, canvas.width, 35);
+                    ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(15, 17.5, 7, 0, 2 * Math.PI); ctx.fill();
+                    ctx.fillStyle = '#facc15'; ctx.beginPath(); ctx.arc(35, 17.5, 7, 0, 2 * Math.PI); ctx.fill();
+                    ctx.fillStyle = '#39d353'; ctx.beginPath(); ctx.arc(55, 17.5, 7, 0, 2 * Math.PI); ctx.fill();
+                    ctx.font = '16px Fira Code, monospace';
+                    ctx.fillStyle = '#cccccc';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('root@blacklayer:~', canvas.width / 2, 24);
+
+                    // --- CONTENT ---
+                    ctx.textAlign = 'left';
+                    let yPos = 80;
+
+                    // Fake Command 1: Issuing certificate
+                    ctx.fillStyle = '#39d353'; // bl-success
+                    ctx.fillText(`root@blacklayer:`, 40, yPos);
+                    ctx.fillStyle = '#fafafa'; // bl-white
+                    ctx.fillText(`~# ./issue_cert --user "${username}"`, 200, yPos);
+                    yPos += 40;
+
+                    // Output line
+                    ctx.fillStyle = '#cccccc'; // bl-light-gray
+                    ctx.fillText(`[+] Running script: CertificateOfAchievement.sh`, 40, yPos);
+                    yPos += 50;
                     
-                    let logIndex = 0;
-                    const interval = setInterval(() => {
-                        if (logIndex < BOOT_LOG_SEQUENCE.length) {
-                            setTerminalLines(prev => [...prev, `<span class="text-bl-gray">${BOOT_LOG_SEQUENCE[logIndex]}</span>`]);
-                            logIndex++;
-                        } else {
-                            clearInterval(interval);
-                            addTerminalLine("\\nType <span class='text-yellow-400'>dump_firmware</span> to extract the firmware.", 'INFO');
-                            setShowTerminalInput(true);
-                        }
-                    }, 400);
-                }
-            }, [isPoweredOn, isUartConnected, gameState]);
+                    // Main Title
+                    ctx.font = '700 48px Fira Code, monospace';
+                    ctx.fillStyle = '#fafafa';
+                    ctx.fillText('CERTIFICATE OF ACHIEVEMENT', 40, yPos);
+                    yPos += 30;
+                    ctx.strokeStyle = '#2e2e2e';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath(); ctx.moveTo(40, yPos); ctx.lineTo(canvas.width - 40, yPos); ctx.stroke();
+                    yPos += 50;
 
-            const handleToolSelect = (tool) => {
-                if (connections.find(c => c.tool === tool)) return;
-                setSelectedTool(tool);
-            };
+                    // Presented to
+                    ctx.font = '20px Fira Code, monospace';
+                    ctx.fillStyle = '#888888'; // bl-gray
+                    ctx.fillText('// Presented to the following operator', 40, yPos);
+                    yPos += 40;
+                    ctx.font = '700 40px Fira Code, monospace';
+                    ctx.fillStyle = '#fafafa';
+                    ctx.fillText(username, 40, yPos);
+                    yPos += 60;
 
-            const handlePinClick = (pinId) => {
-                if (!selectedTool) {
-                    addTerminalLine('Select a tool from the toolkit first!', 'WARN');
-                    return;
-                }
-                if (connections.find(c => c.pin === pinId)) return;
-                
-                setConnections(prev => [...prev, { tool: selectedTool, pin: pinId }]);
-                addTerminalLine(`Connected ${selectedTool} to ${PINS_CONFIG[pinId].label}.`);
-                setSelectedTool(null);
-            };
+                    // Completion Statement
+                    ctx.font = '20px Fira Code, monospace';
+                    ctx.fillStyle = '#cccccc';
+                    ctx.fillText(`[INFO] For successful completion of the OT & ICS Cybersecurity Training`, 40, yPos);
+                    yPos += 50;
 
-            const handleTerminalCommand = (command) => {
-                addTerminalLine(`> ${command}`);
-                const trimmedCommand = command.trim();
-                const [cmd, arg] = trimmedCommand.split(' ');
+                    // Lab Modules as ls -l
+                    ctx.fillStyle = '#888888';
+                    ctx.fillText('# Verifying completed modules...', 40, yPos);
+                    yPos += 30;
+                    ctx.fillStyle = '#fafafa';
+                    ctx.fillText('PERMISSIONS  OWNER     GROUP       SIZE   DATE        MODULE (TIME)', 40, yPos);
+                    yPos += 30;
+                    const today = new Date();
+                    const month = today.toLocaleString('default', { month: 'short' });
+                    const day = today.getDate();
+                    
+                    Object.entries(LABS).forEach(([id, { name }]) => {
+                        const time = completionTimes[id] ? formatTime(completionTimes[id]) : 'N/A';
+                        const perms = '-rw-r--r--';
+                        const owner = 'root';
+                        const group = 'operator';
+                        const size = `${(Math.random() * 8 + 2).toFixed(1)}K`;
+                        const dateStr = `${month} ${day}`;
+                        ctx.fillText(`${perms}  ${owner}    ${group}    ${size}  ${dateStr}      ${id.padEnd(12, ' ')} (${time})`, 40, yPos);
+                        yPos += 28;
+                    });
+                    yPos += 30;
 
-                if (gameState === 'DUMPING' && trimmedCommand.toLowerCase() === 'dump_firmware') {
-                    setShowTerminalInput(false);
-                    setShowAnimation('dump');
-                } else if (gameState === 'ANALYSIS' && cmd.toLowerCase() === 'call' && arg === 'grant_access') {
-                    addTerminalLine('Executing function call: grant_access()', 'SUCCESS');
-                    addTerminalLine('Vulnerability exploited. Device relay enabled.', 'SUCCESS');
-                    setGameState('EXPLOITATION');
-                } else {
-                    addTerminalLine("Command not recognized or invalid in current state.", "ERROR");
-                }
-            };
-            
-            const handleDumpComplete = () => setShowAnimation('decompile');
-            const handleDecompilationComplete = () => {
-                 setShowAnimation(null);
-                 setGameState('ANALYSIS');
-                 setOutputTab('analysis');
-                 addTerminalLine('Decompilation complete. Analyze the code for vulnerabilities.', 'SUCCESS');
-                 addTerminalLine("HINT: Use <span class='text-yellow-400'>call &lt;function_name&gt;</span> to execute functions.", "INFO");
-                 setShowTerminalInput(true);
-            };
+                    // Final prompt
+                    ctx.fillStyle = '#39d353';
+                    ctx.fillText('root@blacklayer:', 40, yPos);
+                    ctx.fillStyle = '#fafafa';
+                    const promptText = '~# ';
+                    ctx.fillText(promptText, 200, yPos);
+                    const promptWidth = ctx.measureText(promptText).width;
+                    const cursorX = 200 + promptWidth + 2; // Start cursor 2px after the text
+                    ctx.fillRect(cursorX, yPos - 18, 12, 24); // Blinking cursor
 
-            const getPinPosition = (pinId) => {
-                if (!workspaceRef.current) return { x: 0, y: 0 };
-                const pinElement = document.getElementById(`pin-${pinId}`);
-                if (!pinElement) return { x: 0, y: 0 };
-                const workspaceRect = workspaceRef.current.getBoundingClientRect();
-                const pinRect = pinElement.getBoundingClientRect();
-                return { x: pinRect.left - workspaceRect.left + pinRect.width / 2, y: pinRect.top - workspaceRect.top + pinRect.height / 2 };
+                    // Stamp and Authority (Bottom Right)
+                    const signatureY = canvas.height - 60;
+                    const signatureX = canvas.width - 250;
+                    
+                    const stampX = signatureX - (stampImage.width / 2);
+                    const stampY = signatureY - (stampImage.height * 0.8); // Adjusted stamp position
+                    ctx.drawImage(stampImage, stampX, stampY, stampImage.width, stampImage.height);
+                    
+                    ctx.strokeStyle = '#888888'; // bl-gray
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(signatureX - 150, signatureY);
+                    ctx.lineTo(signatureX + 150, signatureY);
+                    ctx.stroke();
+
+                    ctx.font = '16px Fira Code, monospace';
+                    ctx.fillStyle = '#cccccc';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Issuing Authority', signatureX, signatureY + 25);
+                    
+                    
+                    const link = document.createElement('a');
+                    link.download = `BLACKLAYER_Certificate_${username}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+
+                }).catch(err => {
+                    console.error("Failed to load stamp image for certificate:", err);
+                    alert("Error: Could not load the required image to generate the certificate.");
+                });
             };
-            
-            const getToolPosition = (toolId) => {
-                if (!workspaceRef.current) return { x: 0, y: 0 };
-                const toolElement = document.getElementById(`tool-${toolId}`);
-                if (!toolElement) return { x: 0, y: 0 };
-                const workspaceRect = workspaceRef.current.getBoundingClientRect();
-                const toolRect = toolElement.getBoundingClientRect();
-                return { x: toolRect.left - workspaceRect.left + toolRect.width / 2, y: toolRect.top - workspaceRect.top + toolRect.height / 2 };
-            };
-            
-            const objectivesStatus = useMemo(() => {
-                const statuses = {};
-                statuses['INSPECTION'] = isPoweredOn || ['ACCESS', 'DUMPING', 'ANALYSIS', 'EXPLOITATION'].includes(gameState);
-                statuses['ACCESS'] = isUartConnected || ['DUMPING', 'ANALYSIS', 'EXPLOITATION'].includes(gameState);
-                statuses['DUMPING'] = ['ANALYSIS', 'EXPLOITATION'].includes(gameState);
-                statuses['ANALYSIS'] = gameState === 'EXPLOITATION';
-                statuses['EXPLOITATION'] = gameState === 'EXPLOITATION';
-                return statuses;
-            }, [gameState, isPoweredOn, isUartConnected]);
 
             return (
-                <>
-                    {showAnimation === 'dump' && <HexDumpAnimation onComplete={handleDumpComplete} />}
-                    {showAnimation === 'decompile' && <DecompilationAnimation onComplete={handleDecompilationComplete} />}
-                    {gameState === 'EXPLOITATION' && <WinScreen onReset={onResetRequest} />}
+                 <FullScreenAnimation>
+                    <div className="text-center">
+                        <h2 className="text-5xl font-bold text-bl-success mb-4" style={{textShadow: '0 0 15px #39d353'}}>ALL SIMULATIONS COMPLETE</h2>
+                        <p className="text-lg text-bl-gray mb-8">You have demonstrated proficiency in critical ICS/OT security concepts.</p>
+                        <div className="bg-bl-dark border border-bl-border p-4 rounded-lg mb-8 text-left">
+                           {Object.entries(completionTimes).map(([id, time]) => (
+                               <div key={id} className="flex justify-between items-center">
+                                   <p className="text-bl-light-gray">{LABS[id].name}</p>
+                                   <p className="text-bl-white font-bold">{formatTime(time)}</p>
+                               </div>
+                           ))}
+                        </div>
+                        <div className="flex gap-4 justify-center">
+                            <button onClick={generateCertificate} className="px-8 py-3 border-2 border-bl-success text-bl-success rounded-lg text-xl hover:bg-bl-success hover:text-bl-black transition-all duration-300 shadow-lg hover:shadow-glow-green cursor-pointer">
+                                Download Certificate
+                            </button>
+                             <button onClick={onReset} className="px-8 py-3 border-2 border-bl-white text-bl-white rounded-lg text-xl hover:bg-bl-white hover:text-bl-black transition-all duration-300 shadow-lg hover:shadow-glow-white cursor-pointer">
+                                Restart
+                            </button>
+                        </div>
+                    </div>
+                </FullScreenAnimation>
+            );
+        }
 
-                    <div className="min-h-screen bg-bl-black p-4 md:p-6 flex flex-col font-mono animate-fadeIn">
-                        <header className="flex justify-between items-center mb-4 flex-shrink-0">
-                            <h1 className="text-2xl md:text-3xl font-bold text-bl-white">BLACKLAYER LABS // RE DIVISION</h1>
-                            <button onClick={onResetRequest} className="px-4 py-2 border border-bl-border text-bl-light-gray rounded-lg hover:bg-bl-white hover:text-bl-black transition-all text-sm cursor-pointer">Reset Challenge</button>
-                        </header>
-                        
-                        <main className="flex-grow grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-0">
-                            <div className="lg:col-span-3 flex flex-col gap-4 min-h-0">
-                                <Panel title="Mission Objectives">
+        // --- LAB UI COMPONENTS ---
+        function IcsReconLab({ objectives, objectivesStatus, discoveredHosts }) {
+            const [activeTab, setActiveTab] = useState('objectives');
+            return (
+                <>
+                    <div className="lg:col-span-3 flex flex-col gap-4 min-h-0">
+                        <div className="bg-bl-dark/90 backdrop-blur-sm border border-bl-border rounded-lg flex flex-col shadow-panel h-full">
+                           <div className="flex border-b border-bl-border flex-shrink-0">
+                               <button onClick={() => setActiveTab('objectives')} className={`flex-1 p-3 text-sm font-bold transition-all cursor-pointer rounded-tl-lg ${activeTab === 'objectives' ? 'tab-active' : 'bg-bl-dark text-bl-gray hover:bg-bl-mid'}`}>Objectives</button>
+                               <button onClick={() => setActiveTab('commands')} className={`flex-1 p-3 text-sm font-bold transition-all cursor-pointer ${activeTab === 'commands' ? 'tab-active' : 'bg-bl-dark text-bl-gray hover:bg-bl-mid'}`}>Toolkit</button>
+                           </div>
+                           <div className="p-4 flex-grow overflow-auto">
+                               {activeTab === 'objectives' && (
+                                   <ul className="space-y-3">
+                                       {objectives.map(({id, text}) => {
+                                           const isComplete = objectivesStatus[id];
+                                           return (
+                                               <li key={id} className={`flex items-start transition-all duration-300 ${isComplete ? 'text-bl-gray' : 'text-bl-light-gray'}`}>
+                                                   <svg className={`w-5 h-5 mr-3 mt-0.5 flex-shrink-0 ${isComplete ? 'text-bl-success' : 'text-bl-border'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">{isComplete ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /> : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />}</svg>
+                                                   <span className={`${isComplete && 'line-through'}`}>{text}</span>
+                                               </li>
+                                           );
+                                       })}
+                                   </ul>
+                               )}
+                               {activeTab === 'commands' && (
+                                   <div className="text-sm space-y-3 text-bl-light-gray">
+                                       <p><span className="font-bold text-bl-white">nmap 192.168.1.0/24</span></p>
+                                       <p><span className="font-bold text-bl-white">wireshark -i eth0</span></p>
+                                       <p><span className="font-bold text-bl-white">pestudio updater.exe</span></p>
+                                       <p><span className="font-bold text-bl-white">run updater.exe</span></p>
+                                       <p><span className="font-bold text-bl-white">report &lt;finding&gt;</span></p>
+                                   </div>
+                               )}
+                           </div>
+                       </div>
+                    </div>
+                    <div className="lg:col-span-5 min-h-0 bg-bl-dark/90 schematic-bg backdrop-blur-sm border border-bl-border rounded-lg p-6 shadow-panel">
+                        <div className="w-full h-full flex flex-col items-center justify-around relative">
+                            <div className="absolute w-px h-full bg-bl-border top-0 left-1/2 -translate-x-1/2 animate-pulseSlow"></div>
+                            <div className="absolute h-px w-1/2 bg-bl-border top-1/2 left-1/2 animate-pulseSlow"></div>
+                            <div className="flex flex-col items-center z-10">
+                                <div className="p-3 bg-bl-mid border border-bl-border rounded text-center shadow-lg">
+                                    <p className="text-bl-white font-bold">Your Workstation</p>
+                                    <p className="text-xs text-bl-gray">192.168.0.10</p>
+                                </div>
+                                <div className="w-px h-8 bg-bl-border"></div>
+                                <div className="p-2 bg-bl-dark border-2 border-bl-power rounded-full text-center text-xs text-bl-power shadow-lg">FW</div>
+                            </div>
+                            <div className="flex w-full justify-around items-center z-10">
+                                <div className={`p-3 bg-bl-mid border rounded text-center transition-all duration-500 shadow-lg ${discoveredHosts.includes('192.168.1.75') ? 'border-bl-info animate-pulse' : 'border-bl-border'}`}>
+                                    <p className="font-bold">{discoveredHosts.includes('192.168.1.75') ? 'HMI' : '???'}</p>
+                                    <p className="text-xs text-bl-gray">192.168.1.75</p>
+                                </div>
+                                <div className={`p-3 bg-bl-mid border rounded text-center transition-all duration-500 shadow-lg ${discoveredHosts.includes('192.168.1.50') ? 'border-bl-info animate-pulse' : 'border-bl-border'}`}>
+                                    <p className="font-bold">{discoveredHosts.includes('192.168.1.50') ? 'PLC' : '???'}</p>
+                                    <p className="text-xs text-bl-gray">192.168.1.50</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </>
+            );
+        }
+
+        function StuxnetLab({ objectives, objectivesStatus, currentObjectiveId, actualStatus }) {
+            const [activeTab, setActiveTab] = useState('objectives');
+            const getStatusColor = (isCompromised) => isCompromised ? 'text-bl-success' : 'text-bl-gray';
+            const sabotageActive = actualStatus > 1000;
+            
+            return (
+                <>
+                    <div className="lg:col-span-3 min-h-0">
+                        <div className="bg-bl-dark/90 backdrop-blur-sm border border-bl-border rounded-lg flex flex-col shadow-panel h-full">
+                            <div className="flex border-b border-bl-border flex-shrink-0">
+                                <button onClick={() => setActiveTab('objectives')} className={`flex-1 p-3 text-sm font-bold transition-all cursor-pointer rounded-tl-lg ${activeTab === 'objectives' ? 'tab-active' : 'bg-bl-dark text-bl-gray hover:bg-bl-mid'}`}>Objectives</button>
+                                <button onClick={() => setActiveTab('commands')} className={`flex-1 p-3 text-sm font-bold transition-all cursor-pointer ${activeTab === 'commands' ? 'tab-active' : 'bg-bl-dark text-bl-gray hover:bg-bl-mid'}`}>Toolkit</button>
+                            </div>
+                            <div className="p-4 flex-grow overflow-auto">
+                                {activeTab === 'objectives' && (
                                     <ul className="space-y-3">
-                                        {OBJECTIVES.map(({id, text}) => {
+                                        {objectives.map(({id, text}) => {
                                             const isComplete = objectivesStatus[id];
-                                            const isCurrent = gameState === id;
+                                            const isCurrent = currentObjectiveId === id;
                                             return (
                                                 <li key={id} className={`flex items-start transition-all duration-300 ${isComplete ? 'text-bl-gray' : 'text-bl-light-gray'}`}>
-                                                    <svg className={`w-5 h-5 mr-3 mt-0.5 flex-shrink-0 ${isComplete ? 'text-bl-relay' : 'text-bl-border'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        {isComplete ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /> : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />}
-                                                    </svg>
+                                                    <svg className={`w-5 h-5 mr-3 mt-0.5 flex-shrink-0 ${isComplete ? 'text-bl-success' : 'text-bl-border'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">{isComplete ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /> : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />}</svg>
                                                     <span className={`${isComplete && 'line-through'}`}>{text}</span>
                                                     {isCurrent && <span className="ml-2 w-2 h-2 rounded-full bg-bl-white animate-pulse"></span>}
                                                 </li>
                                             );
                                         })}
                                     </ul>
-                                </Panel>
-                                <Panel title="Toolkit">
-                                    <div className="grid grid-cols-2 gap-3">
-                                        {Object.entries(TOOLS_CONFIG).map(([id, {label, color, icon}]) => {
-                                            const isConnected = connections.some(c => c.tool === id);
-                                            const isSelected = selectedTool === id;
-                                            return (
-                                                <button key={id} id={`tool-${id}`} onClick={() => handleToolSelect(id)} disabled={isConnected}
-                                                    className={`p-3 border rounded-md text-center transition-all flex flex-col items-center justify-center cursor-pointer
-                                                        ${isConnected ? 'bg-bl-mid/50 text-bl-gray' : 'hover:shadow-glow-white hover:border-bl-white'}
-                                                        ${isSelected ? 'shadow-glow-white border-bl-white' : 'border-bl-border'}`}
-                                                >
-                                                    <svg className="w-6 h-6 mb-1" style={{color: color}} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={icon} /></svg>
-                                                    <span className="font-bold text-sm" style={{color: color}}>{label}</span>
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                </Panel>
-                            </div>
-
-                            <div ref={workspaceRef} className="lg:col-span-5 bg-bl-dark/80 backdrop-blur-sm p-4 border border-bl-border rounded-lg relative flex justify-center items-center min-h-[350px] lg:min-h-0">
-                                <div className="relative w-full max-w-md h-72 bg-bl-mid border-2 border-bl-border p-4 rounded-lg shadow-lg">
-                                    <p className="absolute top-2 right-4 text-bl-gray text-xs">Secure IoT Plug v3.0</p>
-                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-28 bg-bl-black border-2 border-bl-border flex flex-col justify-center items-center p-2">
-                                        <span className="text-bl-white font-bold text-sm">STM32F103RGT6</span>
-                                        <span className="text-bl-gray text-xs">ARM Cortex-M3</span>
-                                    </div>
-                                    <div className="absolute top-10 left-10 w-8 h-4 bg-bl-dark"></div>
-                                    <div className="absolute top-16 left-10 w-8 h-4 bg-bl-dark"></div>
-                                    <div className="absolute bottom-10 right-10 w-4 h-8 bg-bl-dark"></div>
-                                    <div className={`absolute bottom-4 left-4 w-4 h-4 rounded-full border-2 transition-all ${isPoweredOn ? 'border-bl-power bg-bl-power shadow-glow-red animate-pulse' : 'border-red-900 bg-red-900/50'}`}></div>
-                                    <span className={`absolute bottom-4 left-10 text-xs transition-colors ${isPoweredOn ? 'text-bl-power' : 'text-bl-gray'}`}>PWR</span>
-                                    <div className={`absolute bottom-4 right-4 w-4 h-4 rounded-full border-2 transition-all ${gameState === 'EXPLOITATION' ? 'border-bl-relay bg-bl-relay shadow-glow-green animate-pulse' : 'border-green-900 bg-green-900/50'}`}></div>
-                                    <span className={`absolute bottom-4 right-10 text-xs transition-colors ${gameState === 'EXPLOITATION' ? 'text-bl-relay' : 'text-bl-gray'}`}>RELAY</span>
-
-                                    {Object.entries(PINS_CONFIG).map(([id, { label, x, y }]) => (
-                                        <div key={id} id={`pin-${id}`} onClick={() => handlePinClick(id)}
-                                            className="absolute w-6 h-3 bg-bl-gray/50 transform cursor-pointer hover:bg-bl-white"
-                                            style={{ top: `${y}%`, left: `${x}%`, transform: `translate(-${x > 50 ? 0 : 100}%, -50%)` }}
-                                            title={label}
-                                        ></div>
-                                    ))}
-                                </div>
-                                <svg className="absolute top-0 left-0 w-full h-full pointer-events-none z-10">
-                                    {connections.map(({tool, pin}, index) => {
-                                        const toolPos = getToolPosition(tool);
-                                        const pinPos = getPinPosition(pin);
-                                        const midX = toolPos.x + (pinPos.x - toolPos.x) / 2;
-                                        const pathData = `M ${toolPos.x} ${toolPos.y} L ${midX} ${toolPos.y} L ${midX} ${pinPos.y} L ${pinPos.x} ${pinPos.y}`;
-                                        return (
-                                            <path key={index} d={pathData}
-                                                stroke={TOOLS_CONFIG[tool].color} strokeWidth="2" fill="transparent"
-                                                className="animate-fadeIn"
-                                            />
-                                        )
-                                    })}
-                                </svg>
-                            </div>
-                            
-                            <div className="lg:col-span-4 bg-bl-dark/80 backdrop-blur-sm border border-bl-border rounded-lg min-h-[400px] lg:min-h-0 flex flex-col">
-                                {gameState === 'ANALYSIS' || gameState === 'EXPLOITATION' ? (
-                                    <>
-                                    <div className="flex border-b border-bl-border flex-shrink-0">
-                                        <button onClick={() => setOutputTab('terminal')} className={`flex-1 p-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${outputTab === 'terminal' ? 'tab-active' : 'border-transparent text-bl-gray hover:bg-bl-dark'}`}>Terminal</button>
-                                        <button onClick={() => setOutputTab('analysis')} className={`flex-1 p-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${outputTab === 'analysis' ? 'tab-active' : 'border-transparent text-bl-gray hover:bg-bl-dark'}`}>Firmware Analysis</button>
-                                    </div>
-                                    <div className="flex-grow min-h-0">
-                                        {outputTab === 'terminal' && <Terminal lines={terminalLines} onCommand={handleTerminalCommand} showInput={showTerminalInput} prompt="> " />}
-                                        {outputTab === 'analysis' && <pre className="text-xs text-bl-light-gray whitespace-pre-wrap p-4 h-full overflow-y-auto">{DECOMPILED_CODE}</pre>}
-                                    </div>
-                                    </>
-                                ) : (
-                                    <div className="flex-grow min-h-0">
-                                        <Terminal lines={terminalLines} onCommand={handleTerminalCommand} showInput={showTerminalInput} prompt="> " />
+                                )}
+                                {activeTab === 'commands' && (
+                                    <div className="text-sm space-y-3 text-bl-light-gray">
+                                        <p><span className="font-bold text-bl-white">analyze f:\</span></p>
+                                        <p><span className="font-bold text-bl-white">exploit ms08-067 10.10.10.20</span></p>
+                                        <p><span className="font-bold text-bl-white">find step7</span></p>
+                                        <p><span className="font-bold text-bl-white">plc_inject --payload stux.dll</span></p>
+                                        <p><span className="font-bold text-bl-white">set_freq --val 1410Hz</span></p>
+                                        <p><span className="font-bold text-bl-white">report &lt;finding&gt;</span></p>
                                     </div>
                                 )}
                             </div>
-                        </main>
+                        </div>
+                    </div>
+                    <div className="lg:col-span-5 min-h-0">
+                        <div className="bg-bl-dark/90 schematic-bg backdrop-blur-sm border border-bl-border rounded-lg p-6 flex flex-col items-center justify-between shadow-panel h-full relative overflow-hidden">
+                            <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none">
+                                <path d="M 15% 50% L 40% 50%" stroke="#2e2e2e" strokeWidth="2" fill="none" />
+                                <path d="M 60% 50% L 85% 50%" stroke="#2e2e2e" strokeWidth="2" fill="none" />
+                                <path d="M 85% 50% C 95% 50%, 95% 90%, 50% 90%" stroke="#2e2e2e" strokeWidth="2" fill="none" />
+                                {objectivesStatus.PROPAGATE && <path d="M 15% 50% L 40% 50%" stroke="#39d353" strokeWidth="2" fill="none" strokeDasharray="5 5" className={!objectivesStatus.FIND_TARGET ? 'animate-flow' : ''} />}
+                                {objectivesStatus.INJECT_PLC && <path d="M 60% 50% L 85% 50%" stroke="#39d353" strokeWidth="2" fill="none" strokeDasharray="5 5" className={!objectivesStatus.SABOTAGE ? 'animate-flow' : ''} />}
+                                {sabotageActive && <path d="M 85% 50% C 95% 50%, 95% 90%, 50% 90%" stroke="#facc15" strokeWidth="2" fill="none" />}
+                            </svg>
+                            <div className="absolute top-1/2 left-[15%] -translate-x-1/2 -translate-y-1/2 z-10">
+                                <div className={`flex flex-col items-center gap-1 transition-colors duration-500 ${getStatusColor(objectivesStatus.USB_ANALYSIS)}`}>
+                                   <UsbIcon className="w-10 h-10" /><div className="text-center"><p className="font-bold text-sm">USB</p><p className="text-xs">Initial Vector</p></div>
+                                </div>
+                            </div>
+                             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center z-10 gap-20">
+                                 <div className={`flex flex-col items-center gap-1 transition-colors duration-500 ${getStatusColor(objectivesStatus.PROPAGATE)}`}>
+                                    <WorkstationIcon className="w-10 h-10" /><div className="text-center"><p className="font-bold text-sm">Engineering WS</p><p className="text-xs">10.10.10.20</p></div>
+                                </div>
+                                <div className={`flex flex-col items-center gap-1 transition-colors duration-500 ${getStatusColor(objectivesStatus.INJECT_PLC)}`}>
+                                   <PlcIcon className="w-10 h-10" /><div className="text-center"><p className="font-bold text-sm">S7-315 PLC</p><p className="text-xs">Controller</p></div>
+                                </div>
+                            </div>
+                            <div className={`absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-10 transition-all duration-300 ${sabotageActive ? 'animate-vibrate' : ''}`}>
+                                 <div className={`w-32 h-32 rounded-full flex items-center justify-center transition-all duration-300 ${sabotageActive ? 'bg-bl-warning/20 border-2 border-bl-warning shadow-glow-yellow' : 'bg-bl-mid border border-bl-border'}`}>
+                                     <div className={`w-24 h-24 rounded-full flex flex-col items-center justify-center text-center ${sabotageActive ? 'bg-bl-warning text-bl-black' : 'bg-bl-dark text-bl-white'}`}><p className="font-bold text-xs">CENTRIFUGE</p><p className="text-xs">{sabotageActive ? "OVER-FREQ" : "NOMINAL"}</p></div>
+                                 </div>
+                                 <div className="flex gap-4 mt-2">
+                                    <div className="text-center p-2 rounded border border-bl-border bg-bl-dark w-36"><label className="text-xs text-bl-gray">HMI Readout</label><p className="text-xl text-bl-success font-bold tracking-widest">1000 Hz</p></div>
+                                    <div className={`text-center p-2 rounded border bg-bl-dark w-36 transition-colors duration-300 ${sabotageActive ? 'border-bl-warning' : 'border-bl-border'}`}><label className="text-xs text-bl-gray">Actual Speed</label><p className={`text-xl font-bold tracking-widest transition-colors duration-300 ${sabotageActive ? 'text-bl-warning' : 'text-bl-success'}`}>{actualStatus} Hz</p></div>
+                                 </div>
+                            </div>
+                        </div>
                     </div>
                 </>
             );
         }
 
-        function App() {
-            const [appState, setAppState] = useState('splash'); // splash -> login -> game
+        function HavexLab({ objectives, objectivesStatus, currentObjectiveId, opcData }) {
+             const [activeTab, setActiveTab] = useState('objectives');
+             const getStatusColor = (isCompromised) => isCompromised ? 'text-bl-success' : 'text-bl-gray';
 
-            const handleSplashComplete = () => setAppState('login');
-            const handleLogin = () => setAppState('game');
-            const handleReset = () => setAppState('splash');
+             return (
+                <>
+                    <div className="lg:col-span-3 min-h-0">
+                       <div className="bg-bl-dark/90 backdrop-blur-sm border border-bl-border rounded-lg flex flex-col shadow-panel h-full">
+                           <div className="flex border-b border-bl-border flex-shrink-0">
+                               <button onClick={() => setActiveTab('objectives')} className={`flex-1 p-3 text-sm font-bold transition-all cursor-pointer rounded-tl-lg ${activeTab === 'objectives' ? 'tab-active' : 'bg-bl-dark text-bl-gray hover:bg-bl-mid'}`}>Objectives</button>
+                               <button onClick={() => setActiveTab('commands')} className={`flex-1 p-3 text-sm font-bold transition-all cursor-pointer ${activeTab === 'commands' ? 'tab-active' : 'bg-bl-dark text-bl-gray hover:bg-bl-mid'}`}>Toolkit</button>
+                           </div>
+                           <div className="p-4 flex-grow overflow-auto">
+                               {activeTab === 'objectives' && (
+                                   <ul className="space-y-3">
+                                       {objectives.map(({id, text}) => {
+                                           const isComplete = objectivesStatus[id];
+                                           const isCurrent = currentObjectiveId === id;
+                                           return (
+                                               <li key={id} className={`flex items-start transition-all duration-300 ${isComplete ? 'text-bl-gray' : 'text-bl-light-gray'}`}>
+                                                   <svg className={`w-5 h-5 mr-3 mt-0.5 flex-shrink-0 ${isComplete ? 'text-bl-success' : 'text-bl-border'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">{isComplete ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /> : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />}</svg>
+                                                   <span className={`${isComplete && 'line-through'}`}>{text}</span>
+                                                   {isCurrent && <span className="ml-2 w-2 h-2 rounded-full bg-bl-white animate-pulse"></span>}
+                                               </li>
+                                           );
+                                       })}
+                                   </ul>
+                               )}
+                               {activeTab === 'commands' && (
+                                   <div className="text-sm space-y-3 text-bl-light-gray">
+                                       <p><span className="font-bold text-bl-white">run setup.exe</span></p>
+                                       <p><span className="font-bold text-bl-white">connect C2</span></p>
+                                       <p><span className="font-bold text-bl-white">scan opc</span></p>
+                                       <p><span className="font-bold text-bl-white">deploy karagany</span></p>
+                                       <p><span className="font-bold text-bl-white">exfiltrate</span></p>
+                                       <p><span className="font-bold text-bl-white">report &lt;file&gt;</span></p>
+                                   </div>
+                               )}
+                           </div>
+                       </div>
+                    </div>
+                    <div className="lg:col-span-5 min-h-0">
+                       <div className="bg-bl-dark/90 schematic-bg backdrop-blur-sm border border-bl-border rounded-lg p-6 flex flex-col items-center justify-between shadow-panel h-full relative overflow-hidden">
+                           <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none">
+                               <path d="M 15% 25% L 50% 25%" stroke="#2e2e2e" strokeWidth="2" fill="none" />
+                               <path d="M 50% 25% L 50% 75%" stroke="#2e2e2e" strokeWidth="2" fill="none" />
+                               <path d="M 50% 75% L 85% 75%" stroke="#2e2e2e" strokeWidth="2" fill="none" />
+                               <path d="M 50% 25% L 85% 25%" stroke="#2e2e2e" strokeWidth="2" fill="none" />
+                               
+                               {objectivesStatus.INITIAL_BREACH && <path d="M 15% 25% L 50% 25%" stroke="#39d353" strokeWidth="2" fill="none" strokeDasharray="5 5" className={!objectivesStatus.RAT_INSTALL ? 'animate-flow' : ''} />}
+                               {objectivesStatus.OPC_RECON && <path d="M 50% 75% L 85% 75%" stroke="#facc15" strokeWidth="2" fill="none" strokeDasharray="5 5" className="animate-flow" />}
+                               {objectivesStatus.EXFILTRATE && <path d="M 50% 25% L 85% 25%" stroke="#ef4444" strokeWidth="2" fill="none" strokeDasharray="5 5" className="animate-flow" />}
+                           </svg>
+                           <div className="absolute top-[25%] left-[15%] -translate-x-1/2 -translate-y-1/2 z-10 text-center">
+                               <div className={getStatusColor(objectivesStatus.INITIAL_BREACH)}>
+                                   <ServerIcon className="w-10 h-10 mx-auto" />
+                                   <p className="font-bold text-sm">Vendor Site</p>
+                                   <p className="text-xs">(Watering Hole)</p>
+                               </div>
+                           </div>
+                           <div className="absolute top-[25%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 text-center">
+                               <div className={getStatusColor(objectivesStatus.RAT_INSTALL)}>
+                                   <WorkstationIcon className="w-10 h-10 mx-auto" />
+                                   <p className="font-bold text-sm">IT Workstation</p>
+                               </div>
+                           </div>
+                             <div className="absolute top-[25%] left-[85%] -translate-x-1/2 -translate-y-1/2 z-10 text-center">
+                               <div className={getStatusColor(objectivesStatus.RAT_INSTALL)}>
+                                   <GlobeIcon className="w-10 h-10 mx-auto" />
+                                   <p className="font-bold text-sm">C&C Server</p>
+                               </div>
+                           </div>
+                           <div className="absolute top-[75%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 text-center">
+                               <div className={getStatusColor(objectivesStatus.INITIAL_BREACH)}>
+                                    <div className="p-2 bg-bl-dark border-2 border-bl-power rounded-full text-center text-xs text-bl-power shadow-lg mb-2">FW</div>
+                                   <WorkstationIcon className="w-10 h-10 mx-auto" />
+                                   <p className="font-bold text-sm">Engineering WS</p>
+                               </div>
+                           </div>
+                           <div className="absolute top-[75%] left-[85%] -translate-x-1/2 -translate-y-1/2 z-10 text-center">
+                               <div className={getStatusColor(objectivesStatus.OPC_RECON)}>
+                                   <PlcIcon className="w-10 h-10 mx-auto" />
+                                   <p className="font-bold text-sm">OPC Server</p>
+                               </div>
+                           </div>
+                       </div>
+                    </div>
+                </>
+             );
+        }
+
+        function FinalExamLab({ objectives, objectivesStatus, currentObjectiveId }) {
+            const getStatusColor = (isCompromised) => isCompromised ? 'text-bl-success' : 'text-bl-gray';
+            const [activeTab, setActiveTab] = useState('objectives');
+
+            return (
+                <>
+                    <div className="lg:col-span-3 min-h-0">
+                       <div className="bg-bl-dark/90 backdrop-blur-sm border border-bl-border rounded-lg flex flex-col shadow-panel h-full">
+                           <div className="flex border-b border-bl-border flex-shrink-0">
+                               <button onClick={() => setActiveTab('objectives')} className={`flex-1 p-3 text-sm font-bold transition-all cursor-pointer rounded-tl-lg ${activeTab === 'objectives' ? 'tab-active' : 'bg-bl-dark text-bl-gray hover:bg-bl-mid'}`}>Objectives</button>
+                               <button onClick={() => setActiveTab('commands')} className={`flex-1 p-3 text-sm font-bold transition-all cursor-pointer ${activeTab === 'commands' ? 'tab-active' : 'bg-bl-dark text-bl-gray hover:bg-bl-mid'}`}>Toolkit</button>
+                           </div>
+                           <div className="p-4 flex-grow overflow-auto">
+                               {activeTab === 'objectives' && (
+                                   <ul className="space-y-3">
+                                       {objectives.map(({id, text}) => {
+                                           const isComplete = objectivesStatus[id];
+                                           const isCurrent = currentObjectiveId === id;
+                                           return (
+                                               <li key={id} className={`flex items-start transition-all duration-300 ${isComplete ? 'text-bl-gray' : 'text-bl-light-gray'}`}>
+                                                   <svg className={`w-5 h-5 mr-3 mt-0.5 flex-shrink-0 ${isComplete ? 'text-bl-success' : 'text-bl-border'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">{isComplete ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /> : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />}</svg>
+                                                   <span className={`${isComplete && 'line-through'}`}>{text}</span>
+                                                   {isCurrent && <span className="ml-2 w-2 h-2 rounded-full bg-bl-white animate-pulse"></span>}
+                                               </li>
+                                           );
+                                       })}
+                                   </ul>
+                               )}
+                               {activeTab === 'commands' && (
+                                   <div className="text-sm space-y-3 text-bl-light-gray">
+                                       <p><span className="font-bold text-bl-white">exploit cve-2017-5638 203.0.113.10</span></p>
+                                       <p><span className="font-bold text-bl-white">pivot --iface eth1</span></p>
+                                       <p><span className="font-bold text-bl-white">nmap -p 44818 192.168.1.0/24</span></p>
+                                       <p><span className="font-bold text-bl-white">run coordinated_attack.py</span></p>
+                                       <p><span className="font-bold text-bl-white">shutdown_plc --force</span></p>
+                                       <p><span className="font-bold text-bl-white">rm -rf /var/log/*</span></p>
+                                       <p><span className="font-bold text-bl-white">report &lt;command&gt;</span></p>
+                                   </div>
+                               )}
+                           </div>
+                       </div>
+                    </div>
+                     <div className="lg:col-span-5 min-h-0">
+                       <div className="bg-bl-dark/90 schematic-bg backdrop-blur-sm border border-bl-border rounded-lg p-6 flex items-center justify-center shadow-panel h-full relative overflow-hidden">
+                            <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none">
+                                <path d="M 10% 50% L 30% 50%" stroke="#2e2e2e" strokeWidth="2" fill="none" />
+                                <path d="M 30% 50% L 30% 20%" stroke="#2e2e2e" strokeWidth="2" fill="none" />
+                                <path d="M 30% 50% L 30% 80%" stroke="#2e2e2e" strokeWidth="2" fill="none" />
+                                <path d="M 30% 20% L 50% 20%" stroke="#2e2e2e" strokeWidth="2" fill="none" />
+                                <path d="M 50% 20% L 50% 80%" stroke="#2e2e2e" strokeWidth="2" fill="none" />
+                                <path d="M 50% 50% L 70% 50%" stroke="#2e2e2e" strokeWidth="2" fill="none" />
+                                <path d="M 70% 50% L 90% 25%" stroke="#2e2e2e" strokeWidth="2" fill="none" />
+                                <path d="M 70% 50% L 90% 75%" stroke="#2e2e2e" strokeWidth="2" fill="none" />
+                                {objectivesStatus.WEB_EXPLOIT && <path d="M 10% 50% L 30% 50%" stroke="#39d353" strokeWidth="2" fill="none" className="animate-flow" />}
+                                {objectivesStatus.PIVOT_OT && <path d="M 30% 20% L 50% 20%" stroke="#39d353" strokeWidth="2" fill="none" className="animate-flow" />}
+                                {objectivesStatus.IMPACT && <path d="M 70% 50% L 90% 75%" stroke="#ef4444" strokeWidth="2" fill="none" className="animate-flow" />}
+                            </svg>
+                            <div className="absolute top-1/2 left-[10%] -translate-y-1/2 text-center z-10" >
+                               <div className={getStatusColor(true)}><GlobeIcon className="w-10 h-10 mx-auto" /><p className="font-bold text-sm">Internet</p></div>
+                            </div>
+                            <div className="absolute top-1/2 left-[30%] -translate-y-1/2 text-center z-10">
+                               <div className={getStatusColor(objectivesStatus.WEB_EXPLOIT)}><ServerIcon className="w-10 h-10 mx-auto" /><p className="font-bold text-sm">Web Server</p><p className="text-xs">203.0.113.10</p></div>
+                            </div>
+                             <div className="absolute top-1/2 left-1/2 -translate-y-1/2 text-center z-10">
+                               <div className="p-2 bg-bl-dark border-2 border-bl-power rounded-full text-center text-xs text-bl-power shadow-lg">FW</div>
+                            </div>
+                            <div className="absolute top-1/2 left-[70%] -translate-y-1/2 text-center z-10">
+                               <div className={getStatusColor(objectivesStatus.PIVOT_OT)}><WorkstationIcon className="w-10 h-10 mx-auto" /><p className="font-bold text-sm">EWS</p><p className="text-xs">OT Network</p></div>
+                            </div>
+                            <div className="absolute top-[25%] left-[90%] -translate-y-1/2 text-center z-10">
+                               <div className={getStatusColor(objectivesStatus.COORDINATED_ATTACK)}><WorkstationIcon className="w-10 h-10 mx-auto" /><p className="font-bold text-sm">HMI</p></div>
+                            </div>
+                             <div className="absolute top-[75%] left-[90%] -translate-y-1/2 text-center z-10">
+                               <div className={`${getStatusColor(objectivesStatus.FIND_PLC)} ${objectivesStatus.IMPACT ? 'animate-vibrate' : ''}`}><PlcIcon className="w-10 h-10 mx-auto" /><p className="font-bold text-sm">PLC</p></div>
+                            </div>
+                       </div>
+                    </div>
+                </>
+            );
+        }
+
+        // --- UNIFIED GAME ENGINE ---
+        function Game({ labId, onComplete, username }) {
+            const labConfig = LABS[labId];
+            const [gameState, setGameState] = useState(labConfig.initialState);
+            const [terminalLines, setTerminalLines] = useState(['Initializing simulation...']);
+            const [showTerminalInput, setShowTerminalInput] = useState(true);
+            const [outputTab, setOutputTab] = useState('terminal');
+            const [analysisContent, setAnalysisContent] = useState('');
+            const [startTime, setStartTime] = useState(null);
+            const [currentTime, setCurrentTime] = useState(new Date());
+
+            // Lab-specific states
+            const [discoveredHosts, setDiscoveredHosts] = useState([]);
+            const [actualStatus, setActualStatus] = useState(1000);
+            
+            useEffect(() => {
+                setStartTime(Date.now());
+                const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+                return () => clearInterval(timer);
+            }, []);
+            
+            const addTerminalLine = (text, type = 'INFO') => {
+                 const colors = { SUCCESS: 'text-bl-success', ERROR: 'text-bl-power', INFO: 'text-bl-light-gray', WARN: 'text-yellow-400' };
+                 const prefix = type === 'SUCCESS' ? '[+] ' : type === 'ERROR' ? '[-] ' : type === 'WARN' ? '[!] ' : '[*] ';
+                 setTerminalLines(prev => [...prev, `<span class="${colors[type]}">${prefix}</span>${text}`]);
+            };
+
+            const animateTerminalOutput = (output, onComplete) => {
+                 const lines = output.trim().split('\n');
+                 let lineIndex = 0;
+                 setShowTerminalInput(false);
+                 const interval = setInterval(() => {
+                     if (lineIndex < lines.length) {
+                         setTerminalLines(prev => [...prev, lines[lineIndex]]);
+                         lineIndex++;
+                     } else {
+                         clearInterval(interval);
+                         setShowTerminalInput(true);
+                         if (onComplete) onComplete();
+                     }
+                 }, 150);
+            };
+
+            const handleLabCompletion = () => {
+                const completionTime = Math.round((Date.now() - startTime) / 1000);
+                addTerminalLine(`Lab complete. Returning to dashboard...`, 'SUCCESS');
+                setTimeout(() => onComplete(labId, completionTime), 2000);
+            };
+
+            const handleIcsReconCommand = (cmd, args) => {
+                setTerminalLines(prev => [...prev, `<span class="text-bl-gray">> ${cmd} ${args.join(' ')}</span>`]);
+                 if (cmd === 'nmap' && args[0] === '192.168.1.0/24' && gameState === 'START') {
+                     animateTerminalOutput(labConfig.terminalOutputs.NMAP, () => {
+                         addTerminalLine('Network scan complete. Two hosts discovered.', 'SUCCESS');
+                         setDiscoveredHosts(['192.168.1.50', '192.168.1.75']);
+                         setGameState('CAPTURE');
+                     });
+                 } else if (cmd === 'wireshark' && args.join(' ') === '-i eth0' && gameState === 'CAPTURE') {
+                     animateTerminalOutput(labConfig.terminalOutputs.WIRESHARK, () => {
+                         addTerminalLine('Industrial protocol traffic captured.', 'SUCCESS');
+                         setGameState('STATIC_ANALYSIS');
+                     });
+                 } else if (cmd === 'pestudio' && args[0] === 'updater.exe' && gameState === 'STATIC_ANALYSIS') {
+                     setAnalysisContent(labConfig.terminalOutputs.PESTUDIO);
+                     setOutputTab('analysis');
+                     addTerminalLine('Static analysis complete. Report generated.', 'SUCCESS');
+                     setGameState('BEHAVIORAL_ANALYSIS');
+                 } else if (cmd === 'run' && args[0] === 'updater.exe' && gameState === 'BEHAVIORAL_ANALYSIS') {
+                      setAnalysisContent(labConfig.terminalOutputs.PROCMON);
+                      setOutputTab('analysis');
+                      addTerminalLine('Malware executed. Behavioral log captured.', 'SUCCESS');
+                      setGameState('REPORT');
+                 } else if (cmd === 'report' && gameState === 'REPORT') {
+                    if (args.join(' ').includes('hkcu\\software\\microsoft\\windows\\currentversion\\run\\systemupdate')) {
+                        addTerminalLine('Report correct. Persistence via Run key identified.', 'SUCCESS');
+                        setGameState('WIN');
+                        handleLabCompletion();
+                    } else {
+                         addTerminalLine('Report incorrect. The finding must be specific.', 'ERROR');
+                    }
+                 } else {
+                     addTerminalLine('Command not recognized or invalid in current state.', 'ERROR');
+                 }
+            };
+
+            const handleStuxnetCommand = (cmd, args) => {
+                const fullCommand = `${cmd} ${args.join(' ')}`;
+                setTerminalLines(prev => [...prev, `<span class="text-bl-gray">> ${fullCommand}</span>`]);
+                switch(gameState) {
+                    case 'USB_ANALYSIS':
+                        if (cmd === 'analyze' && args[0] === 'f:\\') {
+                            animateTerminalOutput(labConfig.terminalOutputs.USB_ANALYSIS, () => {
+                                addTerminalLine('Initial access successful. Now pivot to the EWS.', 'SUCCESS'); setGameState('PROPAGATE');
+                            });
+                        } else { addTerminalLine('Invalid command. Hint: analyze f:\\', 'ERROR'); }
+                        break;
+                    case 'PROPAGATE':
+                         if (cmd === 'exploit' && args[0] === 'ms08-067' && args[1] === '10.10.10.20') {
+                            animateTerminalOutput(labConfig.terminalOutputs.PROPAGATE, () => {
+                                addTerminalLine('Successfully moved to EWS. Find the target software.', 'SUCCESS'); setGameState('FIND_TARGET');
+                            });
+                        } else { addTerminalLine('Invalid command. Hint: exploit ms08-067 10.10.10.20', 'ERROR'); }
+                        break;
+                    case 'FIND_TARGET':
+                         if (cmd === 'find' && args[0] === 'step7') {
+                            animateTerminalOutput(labConfig.terminalOutputs.FIND_TARGET, () => {
+                                addTerminalLine('Target confirmed. Inject the payload into the PLC.', 'SUCCESS'); setGameState('INJECT_PLC');
+                            });
+                        } else { addTerminalLine('Invalid command. Hint: find step7', 'ERROR'); }
+                        break;
+                    case 'INJECT_PLC':
+                         if (cmd === 'plc_inject' && args[0] === '--payload' && args[1] === 'stux.dll') {
+                            animateTerminalOutput(labConfig.terminalOutputs.INJECT_PLC, () => {
+                                addTerminalLine('Payload active. You now control the PLC. Initiate sabotage.', 'SUCCESS'); setGameState('SABOTAGE');
+                            });
+                        } else { addTerminalLine('Invalid command. Hint: plc_inject --payload stux.dll', 'ERROR'); }
+                        break;
+                    case 'SABOTAGE':
+                         if (cmd === 'set_freq' && args[0] === '--val' && args[1] === '1410hz') {
+                            addTerminalLine('Executing frequency change...', 'WARN');
+                            setAnalysisContent(`${labConfig.terminalOutputs.SABOTAGE_HMI}\n\n${labConfig.terminalOutputs.SABOTAGE_ACTUAL}`);
+                            setOutputTab('analysis'); setActualStatus(1410);
+                            addTerminalLine('Sabotage initiated. Process is compromised.', 'SUCCESS'); setGameState('REPORT');
+                        } else { addTerminalLine('Invalid command. Hint: set_freq --val 1410Hz', 'ERROR'); }
+                        break;
+                    case 'REPORT':
+                         if (cmd === 'report' && args.join(' ') === 'set_freq --val 1410hz') {
+                            addTerminalLine('Report correct. Attack vector confirmed.', 'SUCCESS'); setGameState('WIN'); handleLabCompletion();
+                         } else { addTerminalLine('Report incorrect. Specify the exact sabotage command.', 'ERROR'); }
+                        break;
+                    default: addTerminalLine('Command not recognized or invalid in current state.', 'ERROR');
+                }
+            };
+
+            const handleHavexCommand = (cmd, args) => {
+                 setTerminalLines(prev => [...prev, `<span class="text-bl-gray">> ${cmd} ${args.join(' ')}</span>`]);
+                 switch(gameState) {
+                    case 'INITIAL_BREACH':
+                        if (cmd === 'run' && args[0] === 'setup.exe') {
+                            animateTerminalOutput(labConfig.terminalOutputs.INITIAL_BREACH, () => {
+                                addTerminalLine('RAT deployed. Establish C&C.', 'SUCCESS'); setGameState('RAT_INSTALL');
+                            });
+                        } else { addTerminalLine('Invalid command. Hint: run setup.exe', 'ERROR'); }
+                        break;
+                    case 'RAT_INSTALL':
+                        if (cmd === 'connect' && args[0] === 'c2') {
+                            animateTerminalOutput(labConfig.terminalOutputs.RAT_INSTALL, () => {
+                                addTerminalLine('C&C link active. Begin OT reconnaissance.', 'SUCCESS'); setGameState('OPC_RECON');
+                            });
+                        } else { addTerminalLine('Invalid command. Hint: connect c2', 'ERROR'); }
+                        break;
+                    case 'OPC_RECON':
+                        if (cmd === 'scan' && args[0] === 'opc') {
+                            animateTerminalOutput(labConfig.terminalOutputs.OPC_RECON, () => {
+                                setAnalysisContent('OPC Tags:\n- Motor.RPM\n- Valve.Status\n- Pressure.PSI');
+                                setOutputTab('analysis');
+                                addTerminalLine('OPC recon complete. Deploy credential harvester.', 'SUCCESS'); setGameState('DEPLOY_PAYLOADS');
+                            });
+                        } else { addTerminalLine('Invalid command. Hint: scan opc', 'ERROR'); }
+                        break;
+                    case 'DEPLOY_PAYLOADS':
+                        if (cmd === 'deploy' && args[0] === 'karagany') {
+                            animateTerminalOutput(labConfig.terminalOutputs.DEPLOY_PAYLOADS, () => {
+                                addTerminalLine('Payloads deployed. Exfiltrate data.', 'SUCCESS'); setGameState('EXFILTRATE');
+                            });
+                        } else { addTerminalLine('Invalid command. Hint: deploy karagany', 'ERROR'); }
+                        break;
+                    case 'EXFILTRATE':
+                        if (cmd === 'exfiltrate') {
+                            animateTerminalOutput(labConfig.terminalOutputs.EXFILTRATE, () => {
+                                addTerminalLine('Data exfiltrated. Report the final package name.', 'SUCCESS'); setGameState('REPORT');
+                            });
+                        } else { addTerminalLine('Invalid command. Hint: exfiltrate', 'ERROR'); }
+                        break;
+                    case 'REPORT':
+                        if (cmd === 'report' && args[0] === 'opc_data.zip') {
+                            addTerminalLine('Report correct. Espionage successful.', 'SUCCESS'); setGameState('WIN'); handleLabCompletion();
+                        } else { addTerminalLine('Report incorrect.', 'ERROR'); }
+                        break;
+                    default: addTerminalLine('Command not recognized.', 'ERROR');
+                 }
+            };
+            
+            const handleFinalExamCommand = (cmd, args) => {
+                setTerminalLines(prev => [...prev, `<span class="text-bl-gray">> ${cmd} ${args.join(' ')}</span>`]);
+                switch(gameState) {
+                    case 'WEB_EXPLOIT':
+                        if (cmd === 'exploit' && args[0] === 'cve-2017-5638' && args[1] === '203.0.113.10') {
+                             animateTerminalOutput(labConfig.terminalOutputs.WEB_EXPLOIT, () => {
+                                addTerminalLine('Initial access on IT web server. Pivot to the OT network.', 'SUCCESS'); setGameState('PIVOT_OT');
+                            });
+                        } else { addTerminalLine('Invalid command. Hint: exploit cve-2017-5638 203.0.113.10', 'ERROR');}
+                        break;
+                    case 'PIVOT_OT':
+                         if (cmd === 'pivot' && args[0] === '--iface' && args[1] === 'eth1') {
+                            animateTerminalOutput(labConfig.terminalOutputs.PIVOT_OT, () => {
+                                addTerminalLine('Successfully inside the OT network. Find the controller.', 'SUCCESS'); setGameState('FIND_PLC');
+                            });
+                        } else { addTerminalLine('Invalid command. Hint: pivot --iface eth1', 'ERROR'); }
+                        break;
+                    case 'FIND_PLC':
+                        if (cmd === 'nmap' && args.join(' ') === '-p 44818 192.168.1.0/24') {
+                            animateTerminalOutput(labConfig.terminalOutputs.FIND_PLC, () => {
+                                addTerminalLine('Primary PLC identified. Prepare for coordinated attack.', 'SUCCESS'); setGameState('COORDINATED_ATTACK');
+                            });
+                        } else { addTerminalLine('Invalid command. Hint: nmap -p 44818 192.168.1.0/24', 'ERROR');}
+                        break;
+                    case 'COORDINATED_ATTACK':
+                        if (cmd === 'run' && args[0] === 'coordinated_attack.py') {
+                            animateTerminalOutput(labConfig.terminalOutputs.COORDINATED_ATTACK, () => {
+                                addTerminalLine('HMI blinded and PLC safety logic bypassed. Achieve impact.', 'SUCCESS'); setGameState('IMPACT');
+                            });
+                        } else { addTerminalLine('Invalid command. Hint: run coordinated_attack.py', 'ERROR'); }
+                        break;
+                    case 'IMPACT':
+                         if (cmd === 'shutdown_plc' && args[0] === '--force') {
+                            animateTerminalOutput(labConfig.terminalOutputs.IMPACT, () => {
+                                addTerminalLine('Process shutdown successful. Cover your tracks.', 'SUCCESS'); setGameState('CLEANUP');
+                            });
+                        } else { addTerminalLine('Invalid command. Hint: shutdown_plc --force', 'ERROR');}
+                        break;
+                    case 'CLEANUP':
+                        if (cmd === 'rm' && args.join(' ') === '-rf /var/log/*') {
+                             animateTerminalOutput(labConfig.terminalOutputs.CLEANUP, () => {
+                                addTerminalLine('Logs erased. Submit your final report.', 'SUCCESS'); setGameState('REPORT');
+                            });
+                        } else { addTerminalLine('Invalid command. Hint: rm -rf /var/log/*', 'ERROR'); }
+                        break;
+                    case 'REPORT':
+                        if (cmd === 'report' && args.join(' ') === 'shutdown_plc --force') {
+                            addTerminalLine('Report correct. Mission accomplished.', 'SUCCESS'); setGameState('WIN'); handleLabCompletion();
+                        } else { addTerminalLine('Incorrect. Report the exact final command.', 'ERROR'); }
+                        break;
+                    default: addTerminalLine('Command not recognized.', 'ERROR');
+                }
+            };
+
+            const handleTerminalCommand = (command) => {
+                const [cmd, ...args] = command.trim().toLowerCase().split(' ');
+                if (labId === 'ics_recon') handleIcsReconCommand(cmd, args);
+                else if (labId === 'stuxnet') handleStuxnetCommand(cmd, args);
+                else if (labId === 'havex') handleHavexCommand(cmd, args);
+                else if (labId === 'final_exam') handleFinalExamCommand(cmd, args);
+            };
+            
+            const objectivesStatus = useMemo(() => {
+                const orderedStates = labConfig.objectives.map(o => o.id);
+                orderedStates.push(labConfig.winState);
+                const currentIndex = orderedStates.indexOf(gameState);
+                const statuses = {};
+                labConfig.objectives.forEach((obj, index) => {
+                    statuses[obj.id] = index < currentIndex;
+                });
+                if (gameState === labConfig.winState) {
+                    const lastObjective = labConfig.objectives[labConfig.objectives.length - 1];
+                    if(lastObjective) statuses[lastObjective.id] = true;
+                }
+                return statuses;
+            }, [gameState, labId, labConfig]);
+            
+            return (
+                 <div className="min-h-screen bg-bl-black p-4 flex flex-col font-mono animate-fadeIn">
+                     <header className="flex justify-between items-center mb-4 flex-shrink-0 text-bl-light-gray">
+                         <h1 className="text-xl md:text-2xl font-bold text-bl-white">{labConfig.name}</h1>
+                         <div className="flex items-center gap-4">
+                             <div>{currentTime.toLocaleDateString()} | {currentTime.toLocaleTimeString()}</div>
+                             <button onClick={() => onComplete(null, null)} className="px-3 py-1.5 border border-bl-border text-bl-light-gray rounded-md hover:bg-bl-white hover:text-bl-black transition-all text-sm cursor-pointer">Exit to Dashboard</button>
+                         </div>
+                     </header>
+                     <main className="flex-grow grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-0">
+                        {labId === 'ics_recon' && <IcsReconLab objectives={labConfig.objectives} objectivesStatus={objectivesStatus} discoveredHosts={discoveredHosts} />}
+                        {labId === 'stuxnet' && <StuxnetLab objectives={labConfig.objectives} objectivesStatus={objectivesStatus} currentObjectiveId={gameState} actualStatus={actualStatus} />}
+                        {labId === 'havex' && <HavexLab objectives={labConfig.objectives} objectivesStatus={objectivesStatus} currentObjectiveId={gameState} />}
+                        {labId === 'final_exam' && <FinalExamLab objectives={labConfig.objectives} objectivesStatus={objectivesStatus} currentObjectiveId={gameState} />}
+
+                         <div className="lg:col-span-4 bg-bl-dark/90 backdrop-blur-sm border border-bl-border rounded-lg min-h-[400px] lg:min-h-0 flex flex-col shadow-panel">
+                             <div className="flex border-b border-bl-border flex-shrink-0 rounded-t-lg overflow-hidden">
+                                 <button onClick={() => setOutputTab('terminal')} className={`flex-1 p-3 text-sm font-bold transition-all cursor-pointer ${outputTab === 'terminal' ? 'tab-active' : 'bg-bl-dark text-bl-gray hover:bg-bl-mid'}`}>Terminal</button>
+                                 <button onClick={() => setOutputTab('analysis')} disabled={!analysisContent} className={`flex-1 p-3 text-sm font-bold transition-all cursor-pointer ${outputTab === 'analysis' ? 'tab-active' : 'bg-bl-dark text-bl-gray hover:bg-bl-mid'} disabled:opacity-50`}>Analysis</button>
+                             </div>
+                             <div className="flex-grow min-h-0">
+                                {outputTab === 'terminal' ? (
+                                    <Terminal lines={terminalLines} onCommand={handleTerminalCommand} showInput={gameState !== 'WIN'} prompt={`${labId}_cli> `} />
+                                ) : (
+                                    <div className="p-3 font-mono text-sm overflow-y-auto h-full text-bl-light-gray">
+                                        <pre className="whitespace-pre-wrap">{analysisContent}</pre>
+                                    </div>
+                                )}
+                             </div>
+                         </div>
+                     </main>
+                 </div>
+            );
+        }
+
+        // --- MAIN APP ---
+        function App() {
+            const [appState, setAppState] = useState('splash'); // splash, login, dashboard, game, finalCertificate
+            const [username, setUsername] = useState('Analyst');
+            const [activeLab, setActiveLab] = useState(null);
+            const [labCompletion, setLabCompletion] = useState({ ics_recon: false, stuxnet: false, havex: false, final_exam: false });
+            const [completionTimes, setCompletionTimes] = useState({});
+
+            const handleLogin = (user) => {
+                setUsername(user);
+                setAppState('dashboard');
+            };
+
+            const handleLaunchLab = (labId) => {
+                setActiveLab(labId);
+                setAppState('game');
+            };
+
+            const handleLabComplete = (labId, time) => {
+                if (labId && time) {
+                    setLabCompletion(prev => ({...prev, [labId]: true}));
+                    setCompletionTimes(prev => ({...prev, [labId]: time}));
+                }
+                setActiveLab(null);
+                setAppState('dashboard');
+            };
+            
+            const handleShowCertificate = () => {
+                setAppState('finalCertificate');
+            };
+
+            const handleReset = () => {
+                setAppState('splash');
+                setLabCompletion({ ics_recon: false, stuxnet: false, havex: false, final_exam: false });
+                setCompletionTimes({});
+                setActiveLab(null);
+            };
+
+            const renderState = () => {
+                switch(appState) {
+                    case 'splash': return <SplashScreen onComplete={() => setAppState('login')} />;
+                    case 'login': return <LoginPage onLogin={handleLogin} />;
+                    case 'dashboard': return <Dashboard onLaunchLab={handleLaunchLab} onShowCertificate={handleShowCertificate} labCompletion={labCompletion} username={username}/>;
+                    case 'game': return <Game labId={activeLab} onComplete={handleLabComplete} username={username} />;
+                    case 'finalCertificate': return <FinalCertificateScreen onReset={handleReset} username={username} completionTimes={completionTimes} />;
+                    default: return <div>Error: Unknown state</div>;
+                }
+            };
 
             return (
                 <>
                     <CursorManager />
                     <CustomCursor />
-                    {appState === 'splash' && <SplashScreen onComplete={handleSplashComplete} />}
-                    {appState === 'login' && <LoginPage onLogin={handleLogin} />}
-                    {appState === 'game' && <Game onResetRequest={handleReset} />}
+                    {renderState()}
                 </>
             );
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
+
     </script>
 </body>
 </html>
+
